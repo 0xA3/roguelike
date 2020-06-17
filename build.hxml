@@ -1,0 +1,14 @@
+-lib ansix
+-cp src
+-D analyzer-optimize
+-dce full
+-main Main
+
+-D js-es=6
+-lib hxnodejs
+--js bin/app.js
+
+# --hl bin/app.hl
+# --neko bin/app.n
+# --python bin/app.py
+# --cpp bin/cpp
