@@ -1,36 +1,46 @@
 package roguelike;
 
-import xa3.Ansix;
 import haxe.Timer;
-
 import js.Node.process;
+import roguelike.RenderFunctions.clearAll;
+import roguelike.RenderFunctions.renderAll;
+import Std.int;
+import xa3.Ansix;
 
 class Roguelike {
 	
-	final width = 80;
-	final height = 50;
+	final screenWidth = 80;
+	final screenHeight = 50;
+	final mapWidth = 80;
+	final mapHeight = 45;
 
-	final grid:Array<Array<String>> = [];
-
-	var x:Int;
-	var y:Int;
+	final grid:Array<Array<Cell>> = [];
 
 	final keyListener:KeyListener;
+	final entities:Array<Entity> = [];
+	var player:Entity;
+	var npc:Entity;
+	var gameMap:GameMap;
 
 	public function new( keyListener:KeyListener ) {
 		this.keyListener = keyListener;
 	}
 
 	public function init() {
-		for( y in 0...height ) {
-			grid.push( [for( x in 0...width ) " "] );
+		for( y in 0...screenHeight ) {
+			grid.push( [for( x in 0...screenWidth ) { s: " ", color: White, background: Black }] );
 		}
-		x = Std.int( width / 2 );
-		y = Std.int( width / 2 );
+
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), '@', White );
+		npc = new Entity( int( screenWidth / 2 - 5), int( screenHeight / 2 ), '@', Yellow );
+		entities.push( player );
+		entities.push( npc );
+
+		gameMap = new GameMap( mapWidth, mapHeight );
 	}
 
 	public function start() {
-		Sys.print( Ansix.clear );
+		Sys.print( Ansix.clear() );
 		loop();
 	}
 
@@ -39,31 +49,35 @@ class Roguelike {
 	}
 
 	function reset() {
-		grid[y][x] = " ";
+		clearAll( grid, entities, screenWidth, screenHeight );
 		getInput();
 	}
 
 	function getInput() {
+		var dx = 0;
+		var dy = 0;
 		switch keyListener.key {
 			case 101: process.exit(); // esc
-			case 117 : y = ( y + height - 1 ) % height; // up
-			case 108: x = ( x + width - 1 ) % width; // left
-			case 100: y = ( y + 1 ) % height;	// down
-			case 114: x = ( x + 1 ) % width; // right
+			case 117 : dy = -1; // up
+			case 108: dx = -1; // left
+			case 100: dy = 1;	// down
+			case 114: dx = 1; // right
 			default: // no-op
 		}
 		keyListener.key = 0;
-		update();
+		update( dx, dy );
 	}
 
-	function update() {
+	function update( dx:Int, dy:Int ) {
+		player.move( dx, dy );
 		render();
 	}
 
 	function render() {
-		grid[y][x] = Ansix.format( "@", [Color( White )] );
-		Sys.print( Ansix.resetCursor + grid.map( row -> row.join("")).join( "\n" ));
+		renderAll( grid, entities, gameMap, screenWidth, screenHeight );
+		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
 		
+		// process.exit();
 		loop();
 	}
 }
