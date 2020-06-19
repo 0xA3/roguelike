@@ -32,8 +32,8 @@ class Engine {
 	public static final fovLightWalls = true;
 	public static final fovRadius = 10;
 
-	// public static final cells = roguelike.skins.RoguelikeTutorials.cells;
-	public static final cells = roguelike.skins.Classic.cells;
+	public static final cells = roguelike.skins.RoguelikeTutorials.cells;
+	// public static final cells = roguelike.skins.Classic.cells;
 	
 	final grid:Array<Array<Cell>> = [];
 
@@ -51,9 +51,7 @@ class Engine {
 	}
 
 	public function init() {
-		for( y in 0...screenHeight ) {
-			grid.push( [for( x in 0...screenWidth ) { char: " ", color: White, background: Black }] );
-		}
+		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { char: " ", color: Default, background: Default }] );
 
 		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player] );
 		npc = new Entity( int( screenWidth / 2 - 5), int( screenHeight / 2 ), cells[Npc] );
@@ -100,15 +98,18 @@ class Engine {
 			player.move( dx, dy );
 			fovRecompute = true;
 		}
+		
+		if( fovRecompute ) {
+			fov.update( player, fovRadius );
+			fovRecompute = false;
+		}
+		
 		render();
 	}
 
 
 	function render() {
-		if( fovRecompute ) {
-			fov.update( player, fovRadius );
-			fovRecompute = false;
-		}
+
 		renderAll( grid, entities, gameMap, fov, screenWidth, screenHeight );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
 		

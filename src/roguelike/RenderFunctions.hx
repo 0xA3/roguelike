@@ -11,13 +11,13 @@ class RenderFunctions {
 		for( y in 0...gameMap.height ) {
 			for( x in 0...gameMap.width ) {
 				final isVisible = fov.isVisible( x, y );
-				final isWall = gameMap.tiles[y][x].isBlockSight;
+				final isWall = gameMap.tiles[y][x].isBlocked;
 				if( isVisible ) {
-					grid[y][x] = isWall ? cells[LightWall] : cells[LightGround];
+					drawCell( grid[y][x], isWall ? cells[LightWall] : cells[LightGround] );
 					gameMap.setExplored( x, y );
 				} else {
 					if( gameMap.isExplored( x, y )) {
-						grid[y][x] = isWall ? cells[DarkWall] : cells[DarkGround];
+						drawCell( grid[y][x], isWall ? cells[DarkWall] : cells[DarkGround] );
 					}
 				}
 			}
@@ -38,12 +38,26 @@ class RenderFunctions {
 	}
 
 	public static function drawEntity( grid:Array<Array<Cell>>, fov:Fov, entity:Entity ) {
+		// trace( 'drawEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( entity.avatar )}' );
 		if( fov.isVisible( entity.x, entity.y )) {
-			grid[entity.y][entity.x] = entity.avatar;
+			drawCell( grid[entity.y][entity.x], entity.avatar );
 		}
+		// trace( 'drawEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( grid[entity.y][entity.x] )}' );
 	}
 
 	public static function clearEntity( grid:Array<Array<Cell>>, entity:Entity ) {
-		grid[entity.y][entity.x] = cells[Empty];
+		drawCell( grid[entity.y][entity.x], cells[Empty] );
+		// trace( 'clearEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( grid[entity.y][entity.x] )}' );
 	}
+	
+	public static function drawCell( dest:Cell, src:Cell ) {
+		dest.char = src.char;
+		if( src.color != Transparent ) dest.color = src.color;
+		if( src.background != Transparent ) dest.background = src.background;
+
+		// trace( 'char: "${src.char}" - "${dest.char}"' );
+		// trace( 'color: ${Ansix.colorToString( src.color )} - ${Ansix.colorToString( dest.color )}' );
+		// trace( 'background: ${Ansix.colorToString( src.background )} - ${Ansix.colorToString( dest.background )}' );
+	}
+
 }

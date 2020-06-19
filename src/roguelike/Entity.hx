@@ -1,7 +1,6 @@
 package roguelike;
 
 import xa3.Ansix.Cell;
-import xa3.Ansix.Color;
 
 class Entity {
 	
@@ -13,6 +12,7 @@ class Entity {
 		this.x = x;
 		this.y = y;
 		this.avatar = avatar;
+		// trace( 'new Entity ${xa3.Ansix.cellToString( avatar )}' );
 	}
 
 	public function move( dx:Int, dy:Int ) {
