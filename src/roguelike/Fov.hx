@@ -10,39 +10,39 @@ typedef FovCell = {
 
 class Fov {
 	
-	final map:Array<Array<FovCell>>;
+	final gameMap:GameMap;
+	final visibleGrid:Array<Array<Bool>>;
 	final width:Int;
 	final height:Int;
 
-	function new( map:Array<Array<FovCell>>, width:Int, height:Int ) {
-		this.map = map;
+	function new( gameMap:GameMap, visibleGrid:Array<Array<Bool>>, width:Int, height:Int ) {
+		this.gameMap = gameMap;
+		this.visibleGrid = visibleGrid;
 		this.width = width;
 		this.height = height;
 	}
 
 	public static function fromGameMap( gameMap:GameMap ) {
 		
-		final map:Array<Array<FovCell>> = [for( y in 0...gameMap.height ) [for(x in 0...gameMap.width ) { isVisible: false, hasSeen: false, isBlockSight: gameMap.isBlockSight( x, y ) } ]];
-		return new Fov( map, gameMap.width, gameMap.height );
+		final visibleGrid:Array<Array<Bool>> = [for( y in 0...gameMap.height ) [for(x in 0...gameMap.width ) false ]];
+		return new Fov( gameMap, visibleGrid, gameMap.width, gameMap.height );
 	}
 
-	public function isVisible( x:Int, y:Int ) return map[y][x].isVisible;
-	public function hasSeen( x:Int, y:Int ) return map[y][x].hasSeen;
+	public function isVisible( x:Int, y:Int ) return visibleGrid[y][x];
 
 	public function update( entity:Entity, fovRadius:Int ) {
 		
 		// reset map
-		for( y in 0...map.length ) {
+		for( y in 0...visibleGrid.length ) {
 			for( x in 0...width ) {
-				final cell = map[y][x];
-				if( cell.isVisible ) {
-					cell.hasSeen = true;
-					cell.isVisible = false;
+				final isVisible = visibleGrid[y][x];
+				if( isVisible ) {
+					visibleGrid[y][x] = false;
 				}
 			}
 		}
 
-		map[entity.y][entity.x].isVisible = true;
+		visibleGrid[entity.y][entity.x] = true;
 
 		var angle = 0.0;
 		while( angle < 360 ) {
@@ -59,8 +59,8 @@ class Fov {
 				if( dist >= fovRadius || x < 0 || x >= width || y < 0 || y >= height ) break;
 				final intX = int( x );
 				final intY = int( y );
-				map[intY][intX].isVisible = true;
-				if( map[intY][intX].isBlockSight ) break;
+				visibleGrid[intY][intX] = true;
+				if( gameMap.isBlockSight( intX, intY )) break;
 
 			}
 			angle += 0.18;

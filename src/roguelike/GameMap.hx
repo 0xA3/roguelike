@@ -21,12 +21,12 @@ class GameMap {
 		return tiles;
 	}
 
-	public function isBlocked( x:Int, y:Int ) {
-		return tiles[y][x].isBlocked;
-	}
+	public function isBlocked( x:Int, y:Int ) return tiles[y][x].isBlocked;
+	public function isBlockSight( x:Int, y:Int ) return tiles[y][x].isBlockSight;
+	public function isExplored( x:Int, y:Int ) return tiles[y][x].isExplored;
 
-	public function isBlockSight( x:Int, y:Int ) {
-		return tiles[y][x].isBlockSight;
+	public function setExplored( x:Int, y:Int ) {
+		tiles[y][x].isExplored = true;
 	}
 
 	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity ) {

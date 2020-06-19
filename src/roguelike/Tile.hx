@@ -5,12 +5,14 @@ class Tile {
 	
 	public var isBlocked:Bool;
 	public var isBlockSight:Bool;
+	public var isExplored:Bool;
 	
-	public function new( isBlocked:Bool, ?isBlockSight:Bool ) {
+	public function new( isBlocked:Bool, ?isBlockSight:Bool, ?isExplored = false ) {
 		this.isBlocked = isBlocked;
 		
 		// By default, if a tile blocks entities, it also blocks sight
 		this.isBlockSight = isBlockSight == null ? isBlocked : isBlockSight;
+		this.isExplored = isExplored;
 	}
 
 }

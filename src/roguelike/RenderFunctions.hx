@@ -10,12 +10,12 @@ class RenderFunctions {
 		for( y in 0...gameMap.height ) {
 			for( x in 0...gameMap.width ) {
 				final isVisible = fov.isVisible( x, y );
-				final hasSeen = fov.hasSeen( x, y );
 				final isWall = gameMap.tiles[y][x].isBlockSight;
 				if( isVisible ) {
 					grid[y][x].background = isWall ? colors["lightWall"] : colors["lightGround"];
+					gameMap.setExplored( x, y );
 				} else {
-					if( hasSeen ) {
+					if( gameMap.isExplored( x, y )) {
 						grid[y][x].background = isWall ? colors["darkWall"] : colors["darkGround"];
 					}
 				}
