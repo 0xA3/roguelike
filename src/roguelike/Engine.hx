@@ -55,7 +55,7 @@ class Engine {
 	}
 
 	function loop() {
-		Timer.delay( reset, 100 );
+		Timer.delay( reset, 16 );
 	}
 
 	function reset() {
@@ -79,7 +79,9 @@ class Engine {
 	}
 
 	function update( dx:Int, dy:Int ) {
-		player.move( dx, dy );
+		if( !gameMap.isBlocked( player.x + dx, player.y + dy )) {
+			player.move( dx, dy );
+		}
 		render();
 	}
 

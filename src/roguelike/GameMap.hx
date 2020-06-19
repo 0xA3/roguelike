@@ -18,8 +18,11 @@ class GameMap {
 
 	public function initializeTiles() {
 		final tiles = [for( y in 0...height ) [for( x in 0...width ) new Tile( true )]];
-
 		return tiles;
+	}
+
+	public function isBlocked( x:Int, y:Int ) {
+		return tiles[y][x].isBlocked;
 	}
 
 	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity ) {
