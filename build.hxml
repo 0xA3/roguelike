@@ -1,6 +1,7 @@
 -lib ansix
 -cp src
 -D analyzer-optimize
+-debug
 -dce full
 -main Main
 

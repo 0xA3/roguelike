@@ -7,13 +7,22 @@ import roguelike.RenderFunctions.renderAll;
 import Std.int;
 import xa3.Ansix;
 
-class Roguelike {
+class Engine {
 	
 	final screenWidth = 80;
 	final screenHeight = 50;
 	final mapWidth = 80;
 	final mapHeight = 45;
 
+	public static final roomMaxSize = 10;
+	public static final roomMinSize = 6;
+	public static final maxRooms = 30;
+
+	public static final colors = [
+		"darkWall" => RGB( 0, 0, 100 ),
+		"darkGround" => RGB( 50, 50, 150 ),
+	];
+	
 	final grid:Array<Array<Cell>> = [];
 
 	final keyListener:KeyListener;
@@ -37,6 +46,7 @@ class Roguelike {
 		entities.push( npc );
 
 		gameMap = new GameMap( mapWidth, mapHeight );
+		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player );
 	}
 
 	public function start() {

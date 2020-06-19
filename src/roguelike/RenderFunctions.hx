@@ -1,13 +1,9 @@
 package roguelike;
 
+import roguelike.Engine.colors;
 import xa3.Ansix;
 
 class RenderFunctions {
-	
-	static final colors = [
-		"darkWall" => RGB( 0, 0, 100 ),
-		"darkGround" => RGB( 50, 50, 150 ),
-	];
 	
 	public static function renderAll( con:Array<Array<Cell>>, entities:Array<Entity>, gameMap:GameMap, screenWidth:Int, screenHeight:Int ) {
 		// Draw all the tiles in the game map
