@@ -41,7 +41,6 @@ class Fov {
 				}
 			}
 		}
-
 		visibleGrid[entity.y][entity.x] = true;
 
 		var angle = 0.0;

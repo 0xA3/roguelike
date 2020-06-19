@@ -1,7 +1,7 @@
 package roguelike;
 
-import roguelike.Engine.TTile;
-import roguelike.Engine.tiles;
+import roguelike.Engine.TCell;
+import roguelike.Engine.cells;
 import xa3.Ansix;
 
 class RenderFunctions {
@@ -13,11 +13,11 @@ class RenderFunctions {
 				final isVisible = fov.isVisible( x, y );
 				final isWall = gameMap.tiles[y][x].isBlockSight;
 				if( isVisible ) {
-					grid[y][x].background = isWall ? tiles[LightWall] : tiles[LightGround];
+					grid[y][x] = isWall ? cells[LightWall] : cells[LightGround];
 					gameMap.setExplored( x, y );
 				} else {
 					if( gameMap.isExplored( x, y )) {
-						grid[y][x].background = isWall ? tiles[DarkWall] : tiles[DarkGround];
+						grid[y][x] = isWall ? cells[DarkWall] : cells[DarkGround];
 					}
 				}
 			}
@@ -39,13 +39,11 @@ class RenderFunctions {
 
 	public static function drawEntity( grid:Array<Array<Cell>>, fov:Fov, entity:Entity ) {
 		if( fov.isVisible( entity.x, entity.y )) {
-			grid[entity.y][entity.x].s = entity.char;
-			grid[entity.y][entity.x].color = entity.color;
+			grid[entity.y][entity.x] = entity.avatar;
 		}
 	}
 
 	public static function clearEntity( grid:Array<Array<Cell>>, entity:Entity ) {
-		grid[entity.y][entity.x].s = " ";
-		grid[entity.y][entity.x].background = Black;
+		grid[entity.y][entity.x] = cells[Empty];
 	}
 }

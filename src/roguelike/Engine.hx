@@ -7,7 +7,10 @@ import roguelike.RenderFunctions.renderAll;
 import Std.int;
 import xa3.Ansix;
 
-enum TTile {
+enum TCell {
+	Empty;
+	Player;
+	Npc;
 	DarkWall;
 	DarkGround;
 	LightWall;
@@ -29,12 +32,8 @@ class Engine {
 	public static final fovLightWalls = true;
 	public static final fovRadius = 10;
 
-	public static final tiles = [
-		DarkWall => RGB( 0, 0, 100 ),
-		DarkGround => RGB( 50, 50, 150 ),
-		LightWall => RGB( 130, 110, 50 ),
-		LightGround => RGB( 200, 180, 50 )
-	];
+	// public static final cells = roguelike.skins.RoguelikeTutorials.cells;
+	public static final cells = roguelike.skins.Classic.cells;
 	
 	final grid:Array<Array<Cell>> = [];
 
@@ -53,11 +52,11 @@ class Engine {
 
 	public function init() {
 		for( y in 0...screenHeight ) {
-			grid.push( [for( x in 0...screenWidth ) { s: " ", color: White, background: Black }] );
+			grid.push( [for( x in 0...screenWidth ) { char: " ", color: White, background: Black }] );
 		}
 
-		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), '@', White );
-		npc = new Entity( int( screenWidth / 2 - 5), int( screenHeight / 2 ), '@', Yellow );
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player] );
+		npc = new Entity( int( screenWidth / 2 - 5), int( screenHeight / 2 ), cells[Npc] );
 		entities.push( player );
 		entities.push( npc );
 
