@@ -139,10 +139,26 @@ class GameMap {
 
 			if( isPositionFree ) {
 				final monsterType = Math.random() < 0.8 ? 0 : 1;
-				final monster:Entity = new Entity( x, y, monsterType == 0 ? cells[Orc] : cells[Troll] );
+				final monster:Entity = new Entity( 
+					x, y, 
+					monsterType == 0 ? cells[Orc] : cells[Troll], 
+					monsterType == 0 ? "Orc" : "Troll", 
+					true );
+				
 				entities.push( monster );
-
 			}
 		}
 	}
+
+	public static function getBlockingEntitiesAtLocation( entities:Array<Entity>, x:Int, y:Int ) {
+		for( entity in entities ) {
+			if( entity.isBlock && entity.x == x && entity.y == y ) return Entity( entity );
+		}
+		return None;
+	}
+}
+
+enum BlockingEntity {
+	None;
+	Entity( e:Entity );
 }

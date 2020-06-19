@@ -1,5 +1,6 @@
 package roguelike;
 
+import roguelike.GameStates;
 import haxe.Timer;
 import js.Node.process;
 import roguelike.RenderFunctions.clearAll;
@@ -48,15 +49,18 @@ class Engine {
 	var fov:Fov;
 
 	var fovRecompute = true;
+	var gameState:GameStates;
 
 	public function new( keyListener:KeyListener ) {
 		this.keyListener = keyListener;
 	}
 
 	public function init() {
+		
+		
 		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { char: " ", color: Default, background: Default }] );
 
-		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player] );
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true );
 		entities.push( player );
 
 		gameMap = new GameMap( mapWidth, mapHeight );
@@ -66,7 +70,11 @@ class Engine {
 	}
 
 	public function start() {
+		gameState = PlayersTurn;
+
 		Sys.print( Ansix.clear() );
+		fov.update( player, fovRadius );
+		
 		loop();
 	}
 
@@ -90,21 +98,45 @@ class Engine {
 			case 114: dx = 1; // right
 			default: // no-op
 		}
-		keyListener.key = 0;
+		
 		update( dx, dy );
 	}
 
 	function update( dx:Int, dy:Int ) {
-		if( !gameMap.isBlocked( player.x + dx, player.y + dy )) {
-			player.move( dx, dy );
-			fovRecompute = true;
-		}
 		
-		if( fovRecompute ) {
-			fov.update( player, fovRadius );
-			fovRecompute = false;
+		 if( gameState == PlayersTurn ) {
+			if( dx != 0 || dy != 0 ) {
+				final destinationX = player.x + dx;
+				final destinationY = player.y + dy;
+				if( !gameMap.isBlocked( destinationX, destinationY )) {
+					
+					final target = GameMap.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
+	
+					switch target {
+						case Entity( e ): Sys.print( 'You kick the ${e.name} in the shins, much to its annoyance!' );
+						case None:
+							player.move( dx, dy );
+							fovRecompute = true;
+					}
+				}
+				
+				if( fovRecompute ) {
+					fov.update( player, fovRadius );
+					fovRecompute = false;
+				}
+				keyListener.key = 0;
+			}
+			gameState = EnemyTurn;
+
+		} else if( gameState == EnemyTurn ) {
+			for( entity in entities ) {
+				if( entity != player ) {
+					Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
+				}
+			}
+			gameState = PlayersTurn;
 		}
-		
+
 		render();
 	}
 
