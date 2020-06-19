@@ -3,6 +3,8 @@ package roguelike;
 import Std.int;
 import Math.min;
 import Math.max;
+import roguelike.Engine.cells;
+import roguelike.Engine.TCell;
 
 class GameMap {
 	
@@ -29,7 +31,7 @@ class GameMap {
 		tiles[y][x].isExplored = true;
 	}
 
-	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity ) {
+	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity, entities:Array<Entity>, maxMonstersPerRoom:Int ) {
 
 		final rooms:Array<Rect> = [];
 		for( r in 0...maxRooms ) {
@@ -86,6 +88,8 @@ class GameMap {
 				}
 
 				rooms.push( room );
+				placeEntities( room, entities, maxMonstersPerRoom );
+
 			}
 		}
 
@@ -111,6 +115,34 @@ class GameMap {
 		for( y in int( min( y1, y2 ))...int( max( y1, y2 ) + 1 )) {
 			tiles[y][x].isBlocked = false;
 			tiles[y][x].isBlockSight = false;
+		}
+	}
+
+	function placeEntities( room:Rect, entities:Array<Entity>, maxMonstersPerRoom:Int ) {
+		// Get a random number of monsters
+		final numberOfMonsters = Std.random( maxMonstersPerRoom );
+
+		for( i in 0...numberOfMonsters ) {
+			// Choose a random location in the room
+			final xMin = room.x1 + 1;
+			final xRange = room.x2 - 1 - xMin;
+			final x = xMin + Std.random( xRange );
+			final yMin = room.y1 + 1;
+			final yRange = room.y2 - 1 - yMin;
+			final y = yMin + Std.random( yRange );
+
+			var isPositionFree = true;
+			for( entity in entities ) if( entity.x == x && entity.y == y ) {
+				isPositionFree = false;
+				break;
+			}
+
+			if( isPositionFree ) {
+				final monsterType = Math.random() < 0.8 ? 0 : 1;
+				final monster:Entity = new Entity( x, y, monsterType == 0 ? cells[Orc] : cells[Troll] );
+				entities.push( monster );
+
+			}
 		}
 	}
 }

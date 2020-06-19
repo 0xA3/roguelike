@@ -15,6 +15,8 @@ enum TCell {
 	DarkGround;
 	LightWall;
 	LightGround;
+	Orc;
+	Troll;
 }
 
 class Engine {
@@ -27,6 +29,7 @@ class Engine {
 	public static final roomMaxSize = 10;
 	public static final roomMinSize = 6;
 	public static final maxRooms = 30;
+	public static final maxMonstersPerRoom = 3;
 
 	public static final fovAlgorithm = 0;
 	public static final fovLightWalls = true;
@@ -54,12 +57,10 @@ class Engine {
 		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { char: " ", color: Default, background: Default }] );
 
 		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player] );
-		npc = new Entity( int( screenWidth / 2 - 5), int( screenHeight / 2 ), cells[Npc] );
 		entities.push( player );
-		entities.push( npc );
 
 		gameMap = new GameMap( mapWidth, mapHeight );
-		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player );
+		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom );
 
 		fov = Fov.fromGameMap( gameMap );
 	}
