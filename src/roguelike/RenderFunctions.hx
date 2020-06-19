@@ -1,6 +1,7 @@
 package roguelike;
 
-import roguelike.Engine.colors;
+import roguelike.Engine.TTile;
+import roguelike.Engine.tiles;
 import xa3.Ansix;
 
 class RenderFunctions {
@@ -12,11 +13,11 @@ class RenderFunctions {
 				final isVisible = fov.isVisible( x, y );
 				final isWall = gameMap.tiles[y][x].isBlockSight;
 				if( isVisible ) {
-					grid[y][x].background = isWall ? colors["lightWall"] : colors["lightGround"];
+					grid[y][x].background = isWall ? tiles[LightWall] : tiles[LightGround];
 					gameMap.setExplored( x, y );
 				} else {
 					if( gameMap.isExplored( x, y )) {
-						grid[y][x].background = isWall ? colors["darkWall"] : colors["darkGround"];
+						grid[y][x].background = isWall ? tiles[DarkWall] : tiles[DarkGround];
 					}
 				}
 			}

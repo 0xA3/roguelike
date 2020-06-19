@@ -7,6 +7,13 @@ import roguelike.RenderFunctions.renderAll;
 import Std.int;
 import xa3.Ansix;
 
+enum TTile {
+	DarkWall;
+	DarkGround;
+	LightWall;
+	LightGround;
+}
+
 class Engine {
 	
 	final screenWidth = 80;
@@ -22,11 +29,11 @@ class Engine {
 	public static final fovLightWalls = true;
 	public static final fovRadius = 10;
 
-	public static final colors = [
-		"darkWall" => RGB( 0, 0, 100 ),
-		"darkGround" => RGB( 50, 50, 150 ),
-		"lightWall" => RGB( 130, 110, 50 ),
-		"lightGround" => RGB( 200, 180, 50 )
+	public static final tiles = [
+		DarkWall => RGB( 0, 0, 100 ),
+		DarkGround => RGB( 50, 50, 150 ),
+		LightWall => RGB( 130, 110, 50 ),
+		LightGround => RGB( 200, 180, 50 )
 	];
 	
 	final grid:Array<Array<Cell>> = [];
