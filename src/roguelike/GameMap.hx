@@ -25,6 +25,10 @@ class GameMap {
 		return tiles[y][x].isBlocked;
 	}
 
+	public function isBlockSight( x:Int, y:Int ) {
+		return tiles[y][x].isBlockSight;
+	}
+
 	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity ) {
 
 		final rooms:Array<Rect> = [];

@@ -18,9 +18,15 @@ class Engine {
 	public static final roomMinSize = 6;
 	public static final maxRooms = 30;
 
+	public static final fovAlgorithm = 0;
+	public static final fovLightWalls = true;
+	public static final fovRadius = 10;
+
 	public static final colors = [
 		"darkWall" => RGB( 0, 0, 100 ),
 		"darkGround" => RGB( 50, 50, 150 ),
+		"lightWall" => RGB( 130, 110, 50 ),
+		"lightGround" => RGB( 200, 180, 50 )
 	];
 	
 	final grid:Array<Array<Cell>> = [];
@@ -30,6 +36,9 @@ class Engine {
 	var player:Entity;
 	var npc:Entity;
 	var gameMap:GameMap;
+	var fov:Fov;
+
+	var fovRecompute = true;
 
 	public function new( keyListener:KeyListener ) {
 		this.keyListener = keyListener;
@@ -47,6 +56,8 @@ class Engine {
 
 		gameMap = new GameMap( mapWidth, mapHeight );
 		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player );
+
+		fov = Fov.fromGameMap( gameMap );
 	}
 
 	public function start() {
@@ -81,15 +92,22 @@ class Engine {
 	function update( dx:Int, dy:Int ) {
 		if( !gameMap.isBlocked( player.x + dx, player.y + dy )) {
 			player.move( dx, dy );
+			fovRecompute = true;
 		}
 		render();
 	}
 
+
 	function render() {
-		renderAll( grid, entities, gameMap, screenWidth, screenHeight );
+		if( fovRecompute ) {
+			fov.update( player, fovRadius );
+			fovRecompute = false;
+		}
+		renderAll( grid, entities, gameMap, fov, screenWidth, screenHeight );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
 		
 		// process.exit();
 		loop();
 	}
+
 }

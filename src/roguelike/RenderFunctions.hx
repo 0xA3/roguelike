@@ -5,36 +5,46 @@ import xa3.Ansix;
 
 class RenderFunctions {
 	
-	public static function renderAll( con:Array<Array<Cell>>, entities:Array<Entity>, gameMap:GameMap, screenWidth:Int, screenHeight:Int ) {
+	public static function renderAll( grid:Array<Array<Cell>>, entities:Array<Entity>, gameMap:GameMap, fov:Fov, screenWidth:Int, screenHeight:Int ) {
 		// Draw all the tiles in the game map
 		for( y in 0...gameMap.height ) {
 			for( x in 0...gameMap.width ) {
-				final wall = gameMap.tiles[y][x].isBlockSight;
-				con[y][x].background = wall ? colors["darkWall"] : colors["darkGround"];
+				final isVisible = fov.isVisible( x, y );
+				final hasSeen = fov.hasSeen( x, y );
+				final isWall = gameMap.tiles[y][x].isBlockSight;
+				if( isVisible ) {
+					grid[y][x].background = isWall ? colors["lightWall"] : colors["lightGround"];
+				} else {
+					if( hasSeen ) {
+						grid[y][x].background = isWall ? colors["darkWall"] : colors["darkGround"];
+					}
+				}
 			}
 		}
 		for( entity in entities ) {
 			if( entity.x >= 0 && entity.x < screenWidth && entity.y >= 0 && entity.y < screenHeight ) {
-				drawEntity( con, entity );
+				drawEntity( grid, fov, entity );
 			}
 		}
 	}
 
-	public static function clearAll( con:Array<Array<Cell>>, entities:Array<Entity>, screenWidth:Int, screenHeight:Int ) {
+	public static function clearAll( grid:Array<Array<Cell>>, entities:Array<Entity>, screenWidth:Int, screenHeight:Int ) {
 		for( entity in entities ) {
 			if( entity.x >= 0 && entity.x < screenWidth && entity.y >= 0 && entity.y < screenHeight ) {
-				clearEntity( con, entity );
+				clearEntity( grid, entity );
 			}
 		}
 	}
 
-	public static function drawEntity( con:Array<Array<Cell>>, entity:Entity ) {
-		con[entity.y][entity.x].s = entity.char;
-		con[entity.y][entity.x].color = entity.color;
+	public static function drawEntity( grid:Array<Array<Cell>>, fov:Fov, entity:Entity ) {
+		if( fov.isVisible( entity.x, entity.y )) {
+			grid[entity.y][entity.x].s = entity.char;
+			grid[entity.y][entity.x].color = entity.color;
+		}
 	}
 
-	public static function clearEntity( con:Array<Array<Cell>>, entity:Entity ) {
-		con[entity.y][entity.x].s = " ";
-		con[entity.y][entity.x].background = Black;
+	public static function clearEntity( grid:Array<Array<Cell>>, entity:Entity ) {
+		grid[entity.y][entity.x].s = " ";
+		grid[entity.y][entity.x].background = Black;
 	}
 }
