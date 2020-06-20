@@ -1,8 +1,13 @@
 package roguelike;
 
-import roguelike.GameStates;
+import astar.Graph;
+import astar.MovementDirection;
+import astar.types.Direction;
 import haxe.Timer;
 import js.Node.process;
+import roguelike.components.Fighter;
+import roguelike.GameStates;
+import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
 import Std.int;
@@ -57,34 +62,52 @@ class Engine {
 
 	public function init() {
 		
-		
 		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { char: " ", color: Default, background: Default }] );
 
-		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true );
+		final fighterComponent = new Fighter( 30, 2, 5 );
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, fighterComponent );
 		entities.push( player );
 
-		gameMap = new GameMap( mapWidth, mapHeight );
+		final movementDirection = EightWay;
+		final graph = new Graph( mapWidth, mapHeight, movementDirection );
+		final sqr2 = Math.sqrt( 2 );
+		final costs = [	0 => [N => 1, W => 1, S => 1, E => 1, NW => sqr2, SW => sqr2, SE => sqr2, NE => sqr2 ]];
+		graph.setCosts( costs );
+
+		gameMap = new GameMap( mapWidth, mapHeight, graph );
 		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom );
+		
 
 		fov = Fov.fromGameMap( gameMap );
 	}
 
 	public function start() {
+		
 		gameState = PlayersTurn;
 
 		Sys.print( Ansix.clear() );
 		fov.update( player, fovRadius );
-		
+		render();
+	
+	}
+	
+	function render() {
+		renderAll( grid, entities, gameMap, fov, screenWidth, screenHeight );
+		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
+		clearAll( grid, entities, screenWidth, screenHeight );
+		// process.exit();
 		loop();
 	}
 
 	function loop() {
-		Timer.delay( reset, 16 );
+		Timer.delay( branch, 16 );
 	}
 
-	function reset() {
-		clearAll( grid, entities, screenWidth, screenHeight );
-		getInput();
+	function branch() {
+		switch gameState {
+			case PlayersTurn: getInput();
+			case EnemyTurn: updateEnemy();
+		}
 	}
 
 	function getInput() {
@@ -96,58 +119,53 @@ class Engine {
 			case 108: dx = -1; // left
 			case 100: dy = 1;	// down
 			case 114: dx = 1; // right
-			default: // no-op
+			default: 
+				loop();
+				return;
 		}
 		
-		update( dx, dy );
+		updatePlayer( dx, dy );
 	}
 
-	function update( dx:Int, dy:Int ) {
-		
-		 if( gameState == PlayersTurn ) {
-			if( dx != 0 || dy != 0 ) {
-				final destinationX = player.x + dx;
-				final destinationY = player.y + dy;
-				if( !gameMap.isBlocked( destinationX, destinationY )) {
-					
-					final target = GameMap.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
-	
-					switch target {
-						case Entity( e ): Sys.print( 'You kick the ${e.name} in the shins, much to its annoyance!' );
-						case None:
-							player.move( dx, dy );
-							fovRecompute = true;
-					}
-				}
+	function updatePlayer( dx:Int, dy:Int ) {
+		// Sys.println( 'updatePlayer' );
+		if( dx != 0 || dy != 0 ) {
+			final destinationX = player.x + dx;
+			final destinationY = player.y + dy;
+			if( !gameMap.isBlocked( destinationX, destinationY )) {
 				
-				if( fovRecompute ) {
-					fov.update( player, fovRadius );
-					fovRecompute = false;
-				}
-				keyListener.key = 0;
-			}
-			gameState = EnemyTurn;
+				final target = roguelike.Entity.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
 
-		} else if( gameState == EnemyTurn ) {
-			for( entity in entities ) {
-				if( entity != player ) {
-					Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
+				switch target {
+					case Entity( target ): player.fighter.attack( target );
+					case None:
+						player.move( dx, dy );
+						fovRecompute = true;
 				}
 			}
-			gameState = PlayersTurn;
+			
+			if( fovRecompute ) {
+				fov.update( player, fovRadius );
+				fovRecompute = false;
+			}
 		}
+		keyListener.key = 0;
+		gameState = EnemyTurn;
 
 		render();
 	}
 
-
-	function render() {
-
-		renderAll( grid, entities, gameMap, fov, screenWidth, screenHeight );
-		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
-		
-		// process.exit();
-		loop();
+	function updateEnemy() {
+		// Sys.println( 'updateEnemy' );
+		for( entity in entities ) {
+			if( entity.ai != null ) {
+				// Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
+				entity.ai.takeTurn( player, fov, gameMap, entities );
+			}
+		}
+		gameState = PlayersTurn;
+		render();
 	}
+
 
 }

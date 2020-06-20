@@ -1,20 +1,27 @@
-package roguelike;
+package roguelike.mapobjects;
 
-import Std.int;
-import Math.min;
+import astar.Graph;
+import roguelike.components.BasicMonster;
+import roguelike.components.Fighter;
 import Math.max;
+import Math.min;
 import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
+import Std.int;
+
+using Lambda;
 
 class GameMap {
 	
 	public final width:Int;
 	public final height:Int;
+	final graph:Graph;
 	public final tiles:Array<Array<Tile>>;
 
-	public function new( width:Int, height:Int ) {
+	public function new( width:Int, height:Int, graph:Graph ) {
 		this.width = width;
 		this.height = height;
+		this.graph = graph;
 		tiles = initializeTiles();
 	}
 
@@ -95,6 +102,16 @@ class GameMap {
 
 	}
 
+	public function getPath( self:Entity, target:Entity, entities:Array<Entity> ) {
+		final world = tiles.map( row -> row.map( tile -> tile.isBlocked ? 1 : 0 ));
+		for( entity in entities ) {
+			if( entity.isBlock && entity != self && entity != target ) world[entity.y][entity.x] = 1;
+		}
+		graph.setWorld( world.flatten() );
+		final result = graph.solve( self.x, self.y, target.x, target.y );
+		return result;
+	}
+
 	function createRoom( room:Rect ) {
 		for( x in room.x1 + 1...room.x2 ) {
 			for( y in room.y1 + 1...room.y2 ) {
@@ -138,24 +155,27 @@ class GameMap {
 			}
 
 			if( isPositionFree ) {
-				final monsterType = Math.random() < 0.8 ? 0 : 1;
-				final monster:Entity = new Entity( 
-					x, y, 
-					monsterType == 0 ? cells[Orc] : cells[Troll], 
-					monsterType == 0 ? "Orc" : "Troll", 
-					true );
+				final monsterType = Math.random() < 0.8 ? Orc : Troll;
+				switch monsterType { 
+					case Orc:
+						final fighterComponent = new Fighter( 10, 0, 3 );
+						final aiComponent = new BasicMonster();
+						final monster = new Entity( x, y, cells[monsterType], "Orc", true, fighterComponent, aiComponent );
+						entities.push( monster );
+
+					case Troll:
+						final fighterComponent = new Fighter( 16, 1, 4 );
+						final aiComponent = new BasicMonster();
+						final monster = new Entity( x, y, cells[monsterType], "Troll", true, fighterComponent, aiComponent );
+						entities.push( monster );
+
+					default: // no-op
+				}
 				
-				entities.push( monster );
 			}
 		}
 	}
 
-	public static function getBlockingEntitiesAtLocation( entities:Array<Entity>, x:Int, y:Int ) {
-		for( entity in entities ) {
-			if( entity.isBlock && entity.x == x && entity.y == y ) return Entity( entity );
-		}
-		return None;
-	}
 }
 
 enum BlockingEntity {

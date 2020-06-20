@@ -1,5 +1,6 @@
 package roguelike;
 
+import roguelike.mapobjects.GameMap;
 import Std.int;
 
 typedef FovCell = {

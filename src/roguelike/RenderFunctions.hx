@@ -1,7 +1,8 @@
 package roguelike;
 
-import roguelike.Engine.TCell;
 import roguelike.Engine.cells;
+import roguelike.Engine.TCell;
+import roguelike.mapobjects.GameMap;
 import xa3.Ansix;
 
 class RenderFunctions {

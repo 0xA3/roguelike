@@ -1,4 +1,4 @@
-package roguelike;
+package roguelike.mapobjects;
 
 import Std.int;
 

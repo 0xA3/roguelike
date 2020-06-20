@@ -1,4 +1,5 @@
 -lib ansix
+-lib astar
 -cp src
 -D analyzer-optimize
 -debug
