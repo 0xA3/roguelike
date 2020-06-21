@@ -2,18 +2,21 @@ package roguelike.skins;
 
 import roguelike.Engine.TCell;
 import xa3.Ansix;
+import xa3.Ansix.getCharcodeOfFirstChar as charCode;
 
 class Classic {
 
 	public static final cells:Map<TCell, Cell> = [
-		Empty => { char: " ", color: Default, background: Default },
-		Player => { char: '@', color: White, background: Transparent },
-		Orc => { char: "o", color: Default, background: Transparent },
-		Troll => { char: "T", color: Default , background: Transparent },
+		Empty => 		{ code: " ".code, color: Default, background: Default },
+		Player => 		{ code: '@'.code, color: White, background: Transparent },
+		DeadPlayer => 	{ code: '%'.code, color: Default, background: Transparent },
+		Orc => 			{ code: "o".code, color: Default, background: Transparent },
+		Troll => 		{ code: "T".code, color: Default , background: Transparent },
+		DeadEnemy => 	{ code: '%'.code, color: Default, background: Transparent },
 		
-		DarkWall => { char: "#", color: Default, background: Default },
-		DarkGround => { char: " ", color: Default, background: Default },
-		LightWall => { char: "#", color: Default, background: Default },
-		LightGround => { char: "·", color: Default, background: Default }
-	];
+		DarkWall => 	{ code: "#".code, color: Default, background: Default },
+		DarkGround => 	{ code: " ".code, color: Default, background: Default },
+		LightWall => 	{ code: "#".code, color: Default, background: Default },
+		LightGround => 	{ code: "·".code, color: Default, background: Default }
+	];)
 }

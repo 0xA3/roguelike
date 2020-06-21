@@ -52,7 +52,7 @@ class RenderFunctions {
 	}
 	
 	public static function drawCell( dest:Cell, src:Cell ) {
-		dest.char = src.char;
+		dest.code = src.code;
 		if( src.color != Transparent ) dest.color = src.color;
 		if( src.background != Transparent ) dest.background = src.background;
 

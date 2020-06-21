@@ -13,9 +13,12 @@ import roguelike.RenderFunctions.renderAll;
 import Std.int;
 import xa3.Ansix;
 
+using xa3.ArrayUtils;
+
 enum TCell {
 	Empty;
 	Player;
+	DeadPlayer;
 	Npc;
 	DarkWall;
 	DarkGround;
@@ -23,6 +26,7 @@ enum TCell {
 	LightGround;
 	Orc;
 	Troll;
+	DeadEnemy;
 }
 
 class Engine {
@@ -55,6 +59,7 @@ class Engine {
 
 	var fovRecompute = true;
 	var gameState:GameStates;
+	var playerTurnResults:Array<TResult> = [];
 
 	public function new( keyListener:KeyListener ) {
 		this.keyListener = keyListener;
@@ -62,7 +67,7 @@ class Engine {
 
 	public function init() {
 		
-		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { char: " ", color: Default, background: Default }] );
+		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 
 		final fighterComponent = new Fighter( 30, 2, 5 );
 		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, fighterComponent );
@@ -104,9 +109,13 @@ class Engine {
 	}
 
 	function branch() {
+		playerTurnResults = [];
 		switch gameState {
 			case PlayersTurn: getInput();
 			case EnemyTurn: updateEnemy();
+			case PlayerDead:
+				Sys.println( 'The End' );
+				process.exit();
 		}
 	}
 
@@ -119,7 +128,7 @@ class Engine {
 			case 108: dx = -1; // left
 			case 100: dy = 1;	// down
 			case 114: dx = 1; // right
-			default: 
+			default:
 				loop();
 				return;
 		}
@@ -137,7 +146,9 @@ class Engine {
 				final target = roguelike.Entity.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
 
 				switch target {
-					case Entity( target ): player.fighter.attack( target );
+					case Entity( target ):
+						final attackResults = player.fighter.attack( target );
+						playerTurnResults.extend( attackResults );
 					case None:
 						player.move( dx, dy );
 						fovRecompute = true;
@@ -152,18 +163,49 @@ class Engine {
 		keyListener.key = 0;
 		gameState = EnemyTurn;
 
+		for( playerTurnResult in playerTurnResults ) {
+			switch playerTurnResult {
+				case Message( s ): Sys.println( s );
+				case Dead( deadEntity ):
+					if( deadEntity == player ) {
+						final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
+						gameState = deathResult.state;
+						Sys.println( deathResult.message );
+					} else {
+						final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
+						Sys.println( deathMessage );
+					}
+			}
+		}
+
 		render();
 	}
 
 	function updateEnemy() {
 		// Sys.println( 'updateEnemy' );
+		var nextGameState = PlayersTurn;
 		for( entity in entities ) {
 			if( entity.ai != null ) {
 				// Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
-				entity.ai.takeTurn( player, fov, gameMap, entities );
+				final enemyTurnResults = entity.ai.takeTurn( player, fov, gameMap, entities );
+
+				for( enemyTurnResult in enemyTurnResults ) {
+					switch enemyTurnResult {
+						case Message( s ): Sys.println( s );
+						case Dead( deadEntity ):
+							if( deadEntity == player ) {
+								final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
+								nextGameState = deathResult.state;
+								Sys.println( deathResult.message );
+							} else {
+								final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
+								Sys.println( deathMessage );
+							}
+					}
+				}
 			}
 		}
-		gameState = PlayersTurn;
+		gameState = nextGameState;
 		render();
 	}
 

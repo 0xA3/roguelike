@@ -102,13 +102,13 @@ class GameMap {
 
 	}
 
-	public function getPath( self:Entity, target:Entity, entities:Array<Entity> ) {
+	public function getPath( source:Entity, target:Entity, entities:Array<Entity> ) {
 		final world = tiles.map( row -> row.map( tile -> tile.isBlocked ? 1 : 0 ));
 		for( entity in entities ) {
-			if( entity.isBlock && entity != self && entity != target ) world[entity.y][entity.x] = 1;
+			if( entity.isBlock && entity != source && entity != target ) world[entity.y][entity.x] = 1;
 		}
 		graph.setWorld( world.flatten() );
-		final result = graph.solve( self.x, self.y, target.x, target.y );
+		final result = graph.solve( source.x, source.y, target.x, target.y );
 		return result;
 	}
 

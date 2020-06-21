@@ -1,5 +1,9 @@
 package roguelike.components;
 
+import roguelike.TResult;
+
+using xa3.ArrayUtils;
+
 class Fighter {
 	
 	public var hp:Int;
@@ -14,16 +18,25 @@ class Fighter {
 		this.power = power;
 	}
 
-	public function takeDamage( amount:Int ) hp -= amount;
+	public function takeDamage( amount:Int ) {
+		final results = [];
+		hp -= amount;
+
+		if( hp <= 0 ) results.push( Dead( owner ));
+		return results;
+	}
 
 	public function attack( target:Entity ) {
+		final results = [];
 		final damage = power - target.fighter.defense;
 
 		if( damage > 0 ) {
-			target.fighter.takeDamage( damage );
-			Sys.println( '${owner.name} attacks ${target.name} for $damage hit points.' );
+			results.push( Message( '${owner.name} attacks ${target.name} for $damage hit points.' ));
+			final damageResults = target.fighter.takeDamage( damage );
+			results.extend( damageResults );
 		} else {
-			Sys.println( '${owner.name} attacks ${target.name} but does no damage.' );
+			results.push( Message( '${owner.name} attacks ${target.name} but does no damage.' ));
 		}
+		return results;
 	}
 }
