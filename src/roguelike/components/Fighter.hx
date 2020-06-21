@@ -6,6 +6,7 @@ using xa3.ArrayUtils;
 
 class Fighter {
 	
+	public var maxHp:Int;
 	public var hp:Int;
 	public var defense:Int;
 	public var power:Int;
@@ -16,6 +17,7 @@ class Fighter {
 		this.hp = hp;
 		this.defense = defense;
 		this.power = power;
+		maxHp = hp;
 	}
 
 	public function takeDamage( amount:Int ) {

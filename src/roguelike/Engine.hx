@@ -19,14 +19,16 @@ enum TCell {
 	Empty;
 	Player;
 	DeadPlayer;
-	Npc;
+	Orc;
+	Troll;
+	DeadEnemy;
+	
 	DarkWall;
 	DarkGround;
 	LightWall;
 	LightGround;
-	Orc;
-	Troll;
-	DeadEnemy;
+
+	Text;
 }
 
 class Engine {
@@ -70,7 +72,7 @@ class Engine {
 		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 
 		final fighterComponent = new Fighter( 30, 2, 5 );
-		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, fighterComponent );
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, RenderOrder.ACTOR , fighterComponent );
 		entities.push( player );
 
 		final movementDirection = EightWay;
@@ -97,7 +99,7 @@ class Engine {
 	}
 	
 	function render() {
-		renderAll( grid, entities, gameMap, fov, screenWidth, screenHeight );
+		renderAll( grid, entities, player, gameMap, fov, screenWidth, screenHeight );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
 		clearAll( grid, entities, screenWidth, screenHeight );
 		// process.exit();

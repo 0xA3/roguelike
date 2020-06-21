@@ -160,13 +160,13 @@ class GameMap {
 					case Orc:
 						final fighterComponent = new Fighter( 10, 0, 3 );
 						final aiComponent = new BasicMonster();
-						final monster = new Entity( x, y, cells[monsterType], "Orc", true, fighterComponent, aiComponent );
+						final monster = new Entity( x, y, cells[monsterType], "Orc", true, RenderOrder.ACTOR, fighterComponent, aiComponent );
 						entities.push( monster );
 
 					case Troll:
 						final fighterComponent = new Fighter( 16, 1, 4 );
 						final aiComponent = new BasicMonster();
-						final monster = new Entity( x, y, cells[monsterType], "Troll", true, fighterComponent, aiComponent );
+						final monster = new Entity( x, y, cells[monsterType], "Troll", true, RenderOrder.ACTOR, fighterComponent, aiComponent );
 						entities.push( monster );
 
 					default: // no-op

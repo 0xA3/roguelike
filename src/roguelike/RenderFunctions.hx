@@ -5,9 +5,11 @@ import roguelike.Engine.TCell;
 import roguelike.mapobjects.GameMap;
 import xa3.Ansix;
 
+using StringTools;
+
 class RenderFunctions {
 	
-	public static function renderAll( grid:Array<Array<Cell>>, entities:Array<Entity>, gameMap:GameMap, fov:Fov, screenWidth:Int, screenHeight:Int ) {
+	public static function renderAll( grid:Array<Array<Cell>>, entities:Array<Entity>, player:Entity, gameMap:GameMap, fov:Fov, screenWidth:Int, screenHeight:Int ) {
 		// Draw all the tiles in the game map
 		for( y in 0...gameMap.height ) {
 			for( x in 0...gameMap.width ) {
@@ -23,17 +25,35 @@ class RenderFunctions {
 				}
 			}
 		}
+
+		entities.sort(( a, b ) -> a.renderOrder - b.renderOrder );
+
 		for( entity in entities ) {
 			if( entity.x >= 0 && entity.x < screenWidth && entity.y >= 0 && entity.y < screenHeight ) {
 				drawEntity( grid, fov, entity );
 			}
 		}
+
+		drawText( 'HP: ${player.fighter.hp}/${player.fighter.maxHp}', 1, screenHeight - 2, grid, cells[Text], screenWidth, screenHeight );
+
 	}
 
 	public static function clearAll( grid:Array<Array<Cell>>, entities:Array<Entity>, screenWidth:Int, screenHeight:Int ) {
 		for( entity in entities ) {
 			if( entity.x >= 0 && entity.x < screenWidth && entity.y >= 0 && entity.y < screenHeight ) {
 				clearEntity( grid, entity );
+			}
+		}
+	}
+
+	public static function drawText( s:String, x:Int, y:Int,  grid:Array<Array<Cell>>, format:Cell, screenWidth:Int, screenHeight:Int ) {
+		for( i in 0...s.length ) {
+			final px = x + i;
+			if( px < screenWidth ) {
+				final dest = grid[y][px];
+				dest.code = s.charCodeAt( i );
+				dest.color = format.color;
+				if( format.background != Transparent ) dest.background = format.background;
 			}
 		}
 	}

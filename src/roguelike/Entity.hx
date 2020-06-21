@@ -1,27 +1,30 @@
 package roguelike;
 
-import roguelike.mapobjects.GameMap;
-import roguelike.components.Fighter;
 import roguelike.components.BasicMonster;
+import roguelike.components.Fighter;
+import roguelike.mapobjects.GameMap;
+import roguelike.RenderOrder;
 import xa3.Ansix.Cell;
 
 class Entity {
 	
-	public var name:String;
 	public var x:Int;
 	public var y:Int;
-	public var isBlock:Bool;
 	public var avatar:Cell;
+	public var name:String;
+	public var isBlock:Bool;
+	public var renderOrder:Int;
 
 	public var fighter:Null<Fighter>;
 	public var ai:Null<BasicMonster>;
 
-	public function new( x:Int, y:Int, avatar:Cell, name:String, isBlock = false, ?fighter:Fighter, ?ai:BasicMonster ) {
+	public function new( x:Int, y:Int, avatar:Cell, name:String, isBlock = false, renderOrder = RenderOrder.CORPSE, ?fighter:Fighter, ?ai:BasicMonster ) {
 		this.x = x;
 		this.y = y;
 		this.name = name;
 		this.avatar = avatar;
 		this.isBlock = isBlock;
+		this.renderOrder = renderOrder;
 		// trace( 'new Entity ${xa3.Ansix.cellToString( avatar )}' );
 
 		this.fighter = fighter;

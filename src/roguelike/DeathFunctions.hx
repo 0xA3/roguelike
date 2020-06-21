@@ -17,6 +17,7 @@ class DeathFunctions {
 		monster.avatar = deathAvatar;
 
 		monster.isBlock = false;
+		monster.renderOrder = RenderOrder.CORPSE;
 		monster.fighter = null;
 		monster.ai = null;
 		monster.name = 'remains of ${monster.name}';
