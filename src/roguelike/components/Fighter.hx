@@ -1,5 +1,7 @@
 package roguelike.components;
 
+import roguelike.Engine.cells;
+import roguelike.Engine.TCell;
 import roguelike.TResult;
 
 using xa3.ArrayUtils;
@@ -22,7 +24,7 @@ class Fighter {
 
 	public function takeDamage( amount:Int ) {
 		final results = [];
-		hp -= amount;
+		hp = Std.int( Math.max( 0, hp - amount ));
 
 		if( hp <= 0 ) results.push( Dead( owner ));
 		return results;
@@ -33,11 +35,11 @@ class Fighter {
 		final damage = power - target.fighter.defense;
 
 		if( damage > 0 ) {
-			results.push( Message( '${owner.name} attacks ${target.name} for $damage hit points.' ));
+			results.push( Message({ text: '${owner.name} attacks ${target.name} for $damage hit points.', format: cells[StatusMessage] }));
 			final damageResults = target.fighter.takeDamage( damage );
 			results.extend( damageResults );
 		} else {
-			results.push( Message( '${owner.name} attacks ${target.name} but does no damage.' ));
+			results.push( Message({ text: '${owner.name} attacks ${target.name} but does no damage.', format: cells[StatusMessage] }));
 		}
 		return results;
 	}

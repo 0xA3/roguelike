@@ -18,6 +18,12 @@ class Classic {
 		LightWall => 	{ code: "#".code, color: Default, background: Default },
 		LightGround => 	{ code: "·".code, color: Default, background: Default },
 
-		Text => 		{ code: 0		, color: Default, background: Transparent }
+		Text => 			{ code: 0		, color: Default, background: Transparent },
+		HealthBar =>		{ code: "*".code, color: Default, background: Transparent },
+		HealthBackground =>	{ code: "·".code, color: Default, background: Transparent },
+		
+		PlayerDeathMessage 	=> { code: 0		, color: Default, background: Transparent },
+		EnemyDeathMessage 	=> { code: 0		, color: Default, background: Transparent },
+		StatusMessage 		=> { code: 0		, color: Default, background: Transparent }
 	];
 }

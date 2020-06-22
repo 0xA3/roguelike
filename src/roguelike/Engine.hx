@@ -29,10 +29,17 @@ enum TCell {
 	LightGround;
 
 	Text;
+	HealthBar;
+	HealthBackground;
+
+	PlayerDeathMessage;
+	EnemyDeathMessage;
+	StatusMessage;
 }
 
 class Engine {
 	
+	static final randomInit = 0;
 	static final screenWidth = 80;
 	static final screenHeight = 50;
 	static final barWidth = 20;
@@ -65,6 +72,7 @@ class Engine {
 	var npc:Entity;
 	var gameMap:GameMap;
 	var fov:Fov;
+	var messageLog:MessageLog;
 
 	var fovRecompute = true;
 	var gameState:GameStates;
@@ -75,7 +83,9 @@ class Engine {
 	}
 
 	public function init() {
-		
+
+		xa3.MTRandom.initializeRandGenerator( randomInit );
+
 		for( y in 0...screenHeight ) con.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 		for( y in 0...panelHeight ) panel.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 
@@ -91,9 +101,10 @@ class Engine {
 
 		gameMap = new GameMap( mapWidth, mapHeight, graph );
 		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom );
-		
 
 		fov = Fov.fromGameMap( gameMap );
+
+		messageLog = new MessageLog( messageX, messageWidth, messageHeight );
 	}
 
 	public function start() {
@@ -107,7 +118,7 @@ class Engine {
 	}
 	
 	function render() {
-		renderAll( con, panel, entities, player, gameMap, fov, screenWidth, screenHeight, barWidth, panelHeight, panelY );
+		renderAll( con, panel, entities, player, gameMap, fov, messageLog, screenWidth, screenHeight, barWidth, panelHeight, panelY );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( con, screenWidth ) + Ansix.resetFormat() );
 		clearAll( con, entities, screenWidth, screenHeight );
 		// process.exit();
@@ -175,15 +186,15 @@ class Engine {
 
 		for( playerTurnResult in playerTurnResults ) {
 			switch playerTurnResult {
-				case Message( s ): Sys.println( s );
+				case Message( message ): messageLog.addMessage( message );
 				case Dead( deadEntity ):
 					if( deadEntity == player ) {
 						final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
 						gameState = deathResult.state;
-						Sys.println( deathResult.message );
+						messageLog.addMessage( deathResult.message );
 					} else {
 						final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
-						Sys.println( deathMessage );
+						messageLog.addMessage( deathMessage );
 					}
 			}
 		}
@@ -201,15 +212,15 @@ class Engine {
 
 				for( enemyTurnResult in enemyTurnResults ) {
 					switch enemyTurnResult {
-						case Message( s ): Sys.println( s );
+						case Message( message ): messageLog.addMessage( message );
 						case Dead( deadEntity ):
 							if( deadEntity == player ) {
 								final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
 								nextGameState = deathResult.state;
-								Sys.println( deathResult.message );
+								messageLog.addMessage( deathResult.message );
 							} else {
 								final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
-								Sys.println( deathMessage );
+								messageLog.addMessage( deathMessage );
 							}
 					}
 				}

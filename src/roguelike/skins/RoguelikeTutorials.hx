@@ -18,6 +18,12 @@ class RoguelikeTutorials {
 		LightWall => 	{ code: " ".code, color: Default, background: RGB( 130, 110, 50 )},
 		LightGround => 	{ code: " ".code, color: Default, background: RGB( 200, 180, 50 )},
 
-		Text => 		{ code: 0		, color: Default, background: Transparent }
+		Text => 			{ code: 0		, color: Default, background: Transparent },
+		HealthBar =>		{ code: " ".code, color: Default, background: BrightRed },
+		HealthBackground =>	{ code: " ".code, color: Default, background: Red },
+		
+		PlayerDeathMessage 	=> { code: 0		, color: Red, background: Transparent },
+		EnemyDeathMessage 	=> { code: 0		, color: Yellow, background: Transparent },
+		StatusMessage 		=> { code: 0		, color: White, background: Transparent }
 	];
 }

@@ -11,10 +11,10 @@ class RenderFunctions {
 	
 	static function renderBar( panel:Array<Array<Cell>>, x:Int, y:Int, totalWidth:Int, name:String, value:Int, maximum:Int, barColor:Color, backColor:Color ) {
 
-		drawRect( panel, x, y, totalWidth, 1, 0, Default, backColor );
+		drawRect( panel, x, y, totalWidth, 1, cells[HealthBackground] );
 
 		final barWidth = Std.int( value / maximum * totalWidth );
-		if( barWidth > 0 ) drawRect( panel, x, y, barWidth, 1, 0, Default, barColor );
+		if( barWidth > 0 ) drawRect( panel, x, y, barWidth, 1, cells[HealthBar] );
 
 		drawText( '$name $value/$maximum', Std.int( x + totalWidth / 2 ), y, panel, cells[Text], Center );
 	}
@@ -26,6 +26,7 @@ class RenderFunctions {
 		player:Entity,
 		gameMap:GameMap,
 		fov:Fov,
+		messageLog:MessageLog,
 		screenWidth:Int,
 		screenHeight:Int,
 		barWidth:Int,
@@ -56,6 +57,13 @@ class RenderFunctions {
 			}
 		}
 
+		clearGrid( panel );
+		
+		for( i in 0...messageLog.messages.length ) {
+			final message = messageLog.messages[i];
+			final y = i + 1;
+			drawText( message.text, 0, y, panel, message.format, Left );
+		}
 		renderBar( panel, 0, 0, barWidth, 'HP', player.fighter.hp, player.fighter.maxHp, BrightRed, Red );
 		// trace( panel.map( row -> row.map( cell -> String.fromCharCode( cell.code )).join("") ).join( "\n") );
 		blit( con, panel, 0, panelY );
@@ -88,6 +96,15 @@ class RenderFunctions {
 		}
 	}
 
+	static function clearGrid( grid:Array<Array<Cell>> ) {
+		for( y in 0...grid.length ) {
+			final row = grid[y];
+			for( x in 0...row.length ) {
+				setCell( grid[y][x], " ".code );
+			}
+		}
+	}
+
 	public static function drawText( s:String, x:Int, y:Int,  grid:Array<Array<Cell>>, format:Cell, align:Align ) {
 		final gridWidth = grid[y].length;
 		final startX = switch align {
@@ -104,10 +121,10 @@ class RenderFunctions {
 		}
 	}
 
-	public static function drawRect( grid:Array<Array<Cell>>, x:Int, y:Int, width:Int, height:Int, code = 0, color:Color, background:Color ) {
+	public static function drawRect( grid:Array<Array<Cell>>, x:Int, y:Int, width:Int, height:Int, cell:Cell ) {
 		for( py in y...y + height ) {
 			for( px in x...x + width ) {
-				setCell( grid[py][px], code, color, background );
+				pasteCell( grid[py][px], cell );
 			}
 		}
 	}
@@ -126,7 +143,7 @@ class RenderFunctions {
 	}
 	
 	public static function pasteCell( dest:Cell, src:Cell ) {
-		dest.code = src.code;
+		if( src.code != 0 ) dest.code = src.code;
 		if( src.color != Transparent ) dest.color = src.color;
 		if( src.background != Transparent ) dest.background = src.background;
 

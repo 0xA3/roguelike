@@ -2,5 +2,5 @@ package roguelike;
 
 enum TResult {
 	Dead( e:Entity );
-	Message( s:String );
+	Message( message:roguelike.MessageLog.Message );
 }

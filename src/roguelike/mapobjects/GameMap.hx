@@ -43,12 +43,12 @@ class GameMap {
 		final rooms:Array<Rect> = [];
 		for( r in 0...maxRooms ) {
 			// random width and height
-			final w = roomMinSize + Std.random( roomMaxSize - roomMinSize );
-			final h = roomMinSize + Std.random( roomMaxSize - roomMinSize );
+			final w = roomMinSize + xa3.MTRandom.quickIntRand( roomMaxSize - roomMinSize );
+			final h = roomMinSize + xa3.MTRandom.quickIntRand( roomMaxSize - roomMinSize );
 
 			// random position without going out of the boundaries of the map
-			final x = Std.random( mapWidth - w - 1 );
-			final y = Std.random( mapHeight - h - 1 );
+			final x = xa3.MTRandom.quickIntRand( mapWidth - w - 1 );
+			final y = xa3.MTRandom.quickIntRand( mapHeight - h - 1 );
 
 			final room = new Rect( x, y, w, h );
 			
@@ -82,7 +82,7 @@ class GameMap {
 					final prevCenter = rooms[rooms.length - 1].getCenter();
 
 					// flip a coin (random number that is either 0 or 1)
-					if( Std.random( 2 ) == 1 ) {
+					if( xa3.MTRandom.quickIntRand( 2 ) == 1 ) {
 						// first move horizontally, then vertically
 						createHTunnel( prevCenter.x, center.x, prevCenter.y );
 						createVTunnel( prevCenter.y, center.y, center.x );
@@ -137,16 +137,16 @@ class GameMap {
 
 	function placeEntities( room:Rect, entities:Array<Entity>, maxMonstersPerRoom:Int ) {
 		// Get a random number of monsters
-		final numberOfMonsters = Std.random( maxMonstersPerRoom );
+		final numberOfMonsters = xa3.MTRandom.quickIntRand( maxMonstersPerRoom );
 
 		for( i in 0...numberOfMonsters ) {
 			// Choose a random location in the room
 			final xMin = room.x1 + 1;
 			final xRange = room.x2 - 1 - xMin;
-			final x = xMin + Std.random( xRange );
+			final x = xMin + xa3.MTRandom.quickIntRand( xRange );
 			final yMin = room.y1 + 1;
 			final yRange = room.y2 - 1 - yMin;
-			final y = yMin + Std.random( yRange );
+			final y = yMin + xa3.MTRandom.quickIntRand( yRange );
 
 			var isPositionFree = true;
 			for( entity in entities ) if( entity.x == x && entity.y == y ) {
@@ -155,7 +155,7 @@ class GameMap {
 			}
 
 			if( isPositionFree ) {
-				final monsterType = Math.random() < 0.8 ? Orc : Troll;
+				final monsterType = xa3.MTRandom.quickRand() < 0.8 ? Orc : Troll;
 				switch monsterType { 
 					case Orc:
 						final fighterComponent = new Fighter( 10, 0, 3 );
