@@ -2,7 +2,6 @@ package roguelike.skins;
 
 import roguelike.Engine.TCell;
 import xa3.Ansix;
-import xa3.Ansix.getCharcodeOfFirstChar as charCode;
 
 class Classic {
 

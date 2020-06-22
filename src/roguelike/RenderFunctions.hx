@@ -9,18 +9,40 @@ using StringTools;
 
 class RenderFunctions {
 	
-	public static function renderAll( grid:Array<Array<Cell>>, entities:Array<Entity>, player:Entity, gameMap:GameMap, fov:Fov, screenWidth:Int, screenHeight:Int ) {
+	static function renderBar( panel:Array<Array<Cell>>, x:Int, y:Int, totalWidth:Int, name:String, value:Int, maximum:Int, barColor:Color, backColor:Color ) {
+
+		drawRect( panel, x, y, totalWidth, 1, 0, Default, backColor );
+
+		final barWidth = Std.int( value / maximum * totalWidth );
+		if( barWidth > 0 ) drawRect( panel, x, y, barWidth, 1, 0, Default, barColor );
+
+		drawText( '$name $value/$maximum', Std.int( x + totalWidth / 2 ), y, panel, cells[Text], Center );
+	}
+
+	public static function renderAll(
+		con:Array<Array<Cell>>,
+		panel:Array<Array<Cell>>,
+		entities:Array<Entity>,
+		player:Entity,
+		gameMap:GameMap,
+		fov:Fov,
+		screenWidth:Int,
+		screenHeight:Int,
+		barWidth:Int,
+		panelHeight:Int,
+		panelY:Int
+	) {
 		// Draw all the tiles in the game map
 		for( y in 0...gameMap.height ) {
 			for( x in 0...gameMap.width ) {
 				final isVisible = fov.isVisible( x, y );
 				final isWall = gameMap.tiles[y][x].isBlocked;
 				if( isVisible ) {
-					drawCell( grid[y][x], isWall ? cells[LightWall] : cells[LightGround] );
+					pasteCell( con[y][x], isWall ? cells[LightWall] : cells[LightGround] );
 					gameMap.setExplored( x, y );
 				} else {
 					if( gameMap.isExplored( x, y )) {
-						drawCell( grid[y][x], isWall ? cells[DarkWall] : cells[DarkGround] );
+						pasteCell( con[y][x], isWall ? cells[DarkWall] : cells[DarkGround] );
 					}
 				}
 			}
@@ -30,11 +52,13 @@ class RenderFunctions {
 
 		for( entity in entities ) {
 			if( entity.x >= 0 && entity.x < screenWidth && entity.y >= 0 && entity.y < screenHeight ) {
-				drawEntity( grid, fov, entity );
+				drawEntity( con, fov, entity );
 			}
 		}
 
-		drawText( 'HP: ${player.fighter.hp}/${player.fighter.maxHp}', 1, screenHeight - 2, grid, cells[Text], screenWidth, screenHeight );
+		renderBar( panel, 0, 0, barWidth, 'HP', player.fighter.hp, player.fighter.maxHp, BrightRed, Red );
+		// trace( panel.map( row -> row.map( cell -> String.fromCharCode( cell.code )).join("") ).join( "\n") );
+		blit( con, panel, 0, panelY );
 
 	}
 
@@ -46,14 +70,44 @@ class RenderFunctions {
 		}
 	}
 
-	public static function drawText( s:String, x:Int, y:Int,  grid:Array<Array<Cell>>, format:Cell, screenWidth:Int, screenHeight:Int ) {
+	static function blit( dest:Array<Array<Cell>>, src:Array<Array<Cell>>, x:Int, y:Int ) {
+		final destHeight = dest.length;
+		final destWidth = dest.length == 0 ? 0 : dest[0].length;
+		final srcHeight = src.length;
+		final srcWidth = src.length == 0 ? 0 : src[0].length;
+		final maxX = destWidth;
+		final maxY = destHeight;
+		for( py in 0...srcHeight ) {
+			final destY = y + py;
+			if( destY >= maxY ) break;
+			for( px in 0...srcWidth ) {
+				final destX = x + px;
+				if( destX >= maxX ) break;
+				pasteCell( dest[destY][destX], src[py][px] );
+			}
+		}
+	}
+
+	public static function drawText( s:String, x:Int, y:Int,  grid:Array<Array<Cell>>, format:Cell, align:Align ) {
+		final gridWidth = grid[y].length;
+		final startX = switch align {
+			case Left: x;
+			case Center: Std.int( Math.round( x - s.length / 2 ));
+			case Right: x - s.length;
+		}
+
 		for( i in 0...s.length ) {
-			final px = x + i;
-			if( px < screenWidth ) {
-				final dest = grid[y][px];
-				dest.code = s.charCodeAt( i );
-				dest.color = format.color;
-				if( format.background != Transparent ) dest.background = format.background;
+			final px = startX + i;
+			if( px < gridWidth ) {
+				setCell( grid[y][px], s.charCodeAt( i ), format.color, format.background );
+			}
+		}
+	}
+
+	public static function drawRect( grid:Array<Array<Cell>>, x:Int, y:Int, width:Int, height:Int, code = 0, color:Color, background:Color ) {
+		for( py in y...y + height ) {
+			for( px in x...x + width ) {
+				setCell( grid[py][px], code, color, background );
 			}
 		}
 	}
@@ -61,17 +115,17 @@ class RenderFunctions {
 	public static function drawEntity( grid:Array<Array<Cell>>, fov:Fov, entity:Entity ) {
 		// trace( 'drawEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( entity.avatar )}' );
 		if( fov.isVisible( entity.x, entity.y )) {
-			drawCell( grid[entity.y][entity.x], entity.avatar );
+			pasteCell( grid[entity.y][entity.x], entity.avatar );
 		}
 		// trace( 'drawEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( grid[entity.y][entity.x] )}' );
 	}
 
 	public static function clearEntity( grid:Array<Array<Cell>>, entity:Entity ) {
-		drawCell( grid[entity.y][entity.x], cells[Empty] );
+		pasteCell( grid[entity.y][entity.x], cells[Empty] );
 		// trace( 'clearEntity [${entity.x}:${entity.y}] ${Ansix.cellToString( grid[entity.y][entity.x] )}' );
 	}
 	
-	public static function drawCell( dest:Cell, src:Cell ) {
+	public static function pasteCell( dest:Cell, src:Cell ) {
 		dest.code = src.code;
 		if( src.color != Transparent ) dest.color = src.color;
 		if( src.background != Transparent ) dest.background = src.background;
@@ -81,4 +135,16 @@ class RenderFunctions {
 		// trace( 'background: ${Ansix.colorToString( src.background )} - ${Ansix.colorToString( dest.background )}' );
 	}
 
+	static function setCell( dest:Cell, code:Int, color = Default, background = Default ) {
+		if( code != 0 ) dest.code = code;
+		if( color != Transparent ) dest.color = color;
+		if( background != Transparent ) dest.background = background;
+	}
+
+}
+
+enum Align {
+	Left;
+	Center;
+	Right;
 }

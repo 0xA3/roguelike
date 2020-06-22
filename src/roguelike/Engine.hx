@@ -33,10 +33,16 @@ enum TCell {
 
 class Engine {
 	
-	final screenWidth = 80;
-	final screenHeight = 50;
-	final mapWidth = 80;
-	final mapHeight = 45;
+	static final screenWidth = 80;
+	static final screenHeight = 50;
+	static final barWidth = 20;
+	static final panelHeight = 7;
+	static final panelY = screenHeight - panelHeight;
+	static final mapWidth = 80;
+	static final mapHeight = 43;
+	static final messageX = barWidth + 2;
+	static final messageWidth = screenWidth + barWidth - 2;
+	static final messageHeight = panelHeight - 1;
 
 	public static final roomMaxSize = 10;
 	public static final roomMinSize = 6;
@@ -50,7 +56,8 @@ class Engine {
 	public static final cells = roguelike.skins.RoguelikeTutorials.cells;
 	// public static final cells = roguelike.skins.Classic.cells;
 	
-	final grid:Array<Array<Cell>> = [];
+	final con:Array<Array<Cell>> = [];
+	final panel:Array<Array<Cell>> = [];
 
 	final keyListener:KeyListener;
 	final entities:Array<Entity> = [];
@@ -69,7 +76,8 @@ class Engine {
 
 	public function init() {
 		
-		for( y in 0...screenHeight ) grid.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
+		for( y in 0...screenHeight ) con.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
+		for( y in 0...panelHeight ) panel.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 
 		final fighterComponent = new Fighter( 30, 2, 5 );
 		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, RenderOrder.ACTOR , fighterComponent );
@@ -99,9 +107,9 @@ class Engine {
 	}
 	
 	function render() {
-		renderAll( grid, entities, player, gameMap, fov, screenWidth, screenHeight );
-		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( grid, screenWidth ) + Ansix.resetFormat() );
-		clearAll( grid, entities, screenWidth, screenHeight );
+		renderAll( con, panel, entities, player, gameMap, fov, screenWidth, screenHeight, barWidth, panelHeight, panelY );
+		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( con, screenWidth ) + Ansix.resetFormat() );
+		clearAll( con, entities, screenWidth, screenHeight );
 		// process.exit();
 		loop();
 	}
