@@ -4,7 +4,7 @@ import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
 import roguelike.GameStates;
 import roguelike.MessageLog.Message;
-import xa3.Ansix.Cell;
+import asciix.Cell;
 
 class DeathFunctions {
 	

@@ -4,7 +4,7 @@ import roguelike.components.BasicMonster;
 import roguelike.components.Fighter;
 import roguelike.mapobjects.GameMap;
 import roguelike.RenderOrder;
-import xa3.Ansix.Cell;
+import asciix.Cell;
 
 class Entity {
 	
@@ -25,7 +25,7 @@ class Entity {
 		this.avatar = avatar;
 		this.isBlock = isBlock;
 		this.renderOrder = renderOrder;
-		// trace( 'new Entity ${xa3.Ansix.cellToString( avatar )}' );
+		// trace( 'new Entity ${asciix.Ansix.cellToString( avatar )}' );
 
 		this.fighter = fighter;
 		this.ai = ai;

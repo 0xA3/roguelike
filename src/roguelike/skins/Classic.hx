@@ -1,7 +1,7 @@
 package roguelike.skins;
 
 import roguelike.Engine.TCell;
-import xa3.Ansix;
+import asciix.Cell;
 
 class Classic {
 

@@ -1,7 +1,7 @@
 package roguelike;
 
-import xa3.Ansix.Cell;
-import xa3.Ansix.Color;
+import asciix.Cell;
+import asciix.Color;
 
 typedef Message = {
 	final text:String;

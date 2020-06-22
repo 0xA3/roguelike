@@ -11,7 +11,8 @@ import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
 import Std.int;
-import xa3.Ansix;
+import asciix.Ansix;
+import asciix.Cell;
 
 using xa3.ArrayUtils;
 

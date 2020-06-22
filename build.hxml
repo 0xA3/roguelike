@@ -1,4 +1,4 @@
--lib ansix
+-lib asciix
 -lib astar
 -cp src
 -D analyzer-optimize

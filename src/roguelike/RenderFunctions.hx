@@ -3,7 +3,8 @@ package roguelike;
 import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
 import roguelike.mapobjects.GameMap;
-import xa3.Ansix;
+import asciix.Cell;
+import asciix.Color;
 
 using StringTools;
 
