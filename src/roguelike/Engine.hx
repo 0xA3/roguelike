@@ -1,5 +1,6 @@
 package roguelike;
 
+import roguelike.components.Inventory;
 import astar.Graph;
 import astar.MovementDirection;
 import astar.types.Direction;
@@ -12,6 +13,7 @@ import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
 import Std.int;
 import asciix.Ansix;
+import asciix.Asciix;
 import asciix.Cell;
 
 using xa3.ArrayUtils;
@@ -23,7 +25,9 @@ enum TCell {
 	Orc;
 	Troll;
 	DeadEnemy;
-	
+
+	HealingPotion;
+
 	DarkWall;
 	DarkGround;
 	LightWall;
@@ -36,6 +40,13 @@ enum TCell {
 	PlayerDeathMessage;
 	EnemyDeathMessage;
 	StatusMessage;
+	ItemAddedMessage;
+	InventoryMessage;
+}
+
+enum Action {
+	Move( dx:Int, dy:Int );
+	Pickup;
 }
 
 class Engine {
@@ -56,6 +67,7 @@ class Engine {
 	public static final roomMinSize = 6;
 	public static final maxRooms = 30;
 	public static final maxMonstersPerRoom = 3;
+	public static final maxItemsPerRoom = 2;
 
 	public static final fovAlgorithm = 0;
 	public static final fovLightWalls = true;
@@ -91,7 +103,8 @@ class Engine {
 		for( y in 0...panelHeight ) panel.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
 
 		final fighterComponent = new Fighter( 30, 2, 5 );
-		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, RenderOrder.ACTOR , fighterComponent );
+		final inventoryComponent = new Inventory( 26 );
+		player = new Entity( int( screenWidth / 2 ), int( screenHeight / 2 ), cells[Player], "Player", true, RenderOrder.ACTOR , fighterComponent, inventoryComponent );
 		entities.push( player );
 
 		final movementDirection = EightWay;
@@ -101,7 +114,7 @@ class Engine {
 		graph.setCosts( costs );
 
 		gameMap = new GameMap( mapWidth, mapHeight, graph );
-		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom );
+		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom, maxItemsPerRoom );
 
 		fov = Fov.fromGameMap( gameMap );
 
@@ -119,9 +132,9 @@ class Engine {
 	}
 	
 	function render() {
+		clearAll( con, entities, screenWidth, screenHeight );
 		renderAll( con, panel, entities, player, gameMap, fov, messageLog, screenWidth, screenHeight, barWidth, panelHeight, panelY );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( con, screenWidth ) + Ansix.resetFormat() );
-		clearAll( con, entities, screenWidth, screenHeight );
 		// process.exit();
 		loop();
 	}
@@ -142,46 +155,58 @@ class Engine {
 	}
 
 	function getInput() {
-		var dx = 0;
-		var dy = 0;
 		switch keyListener.key {
 			case 101: process.exit(); // esc
-			case 117 : dy = -1; // up
-			case 108: dx = -1; // left
-			case 100: dy = 1;	// down
-			case 114: dx = 1; // right
+			case 117: updatePlayer( Move( 0, -1 )); // up
+			case 108: updatePlayer( Move( -1, 0 )); // left
+			case 100: updatePlayer( Move( 0, 1 )); // down
+			case 114: updatePlayer( Move( 1, 0 )); // right
+			case 103: updatePlayer( Pickup ); // g
 			default:
 				loop();
 				return;
 		}
-		
-		updatePlayer( dx, dy );
+
 	}
 
-	function updatePlayer( dx:Int, dy:Int ) {
+	function updatePlayer( action:Action ) {
 		// Sys.println( 'updatePlayer' );
-		if( dx != 0 || dy != 0 ) {
-			final destinationX = player.x + dx;
-			final destinationY = player.y + dy;
-			if( !gameMap.isBlocked( destinationX, destinationY )) {
-				
-				final target = roguelike.Entity.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
+		switch action {
+			case Move( dx, dy ):
+				final destinationX = player.x + dx;
+				final destinationY = player.y + dy;
+				if( !gameMap.isBlocked( destinationX, destinationY )) {
+					
+					final target = roguelike.Entity.getBlockingEntitiesAtLocation( entities, destinationX, destinationY );
 
-				switch target {
-					case Entity( target ):
-						final attackResults = player.fighter.attack( target );
-						playerTurnResults.extend( attackResults );
-					case None:
-						player.move( dx, dy );
-						fovRecompute = true;
+					switch target {
+						case Entity( target ):
+							if( target.fighter != null ) {
+								final attackResults = player.fighter.attack( target );
+								playerTurnResults.extend( attackResults );
+							}
+						case None:
+							player.move( dx, dy );
+							fovRecompute = true;
+					}
 				}
+				
+				if( fovRecompute ) {
+					fov.update( player, fovRadius );
+					fovRecompute = false;
+				}
+			case Pickup:
+				var isOnItem = false;
+				for( entity in entities ) {
+					if( entity.item != null && entity.x == player.x && entity.y == player.y ) {
+						final pickupResults = player.inventory.addItem( entity );
+						playerTurnResults.extend( pickupResults );
+						isOnItem = true;
+						break;
+					}
+				}
+				if( !isOnItem ) messageLog.addMessage({ text: 'There is nothing here to pick up.', format: cells[InventoryMessage] });
 			}
-			
-			if( fovRecompute ) {
-				fov.update( player, fovRadius );
-				fovRecompute = false;
-			}
-		}
 		keyListener.key = 0;
 		gameState = EnemyTurn;
 
@@ -197,6 +222,10 @@ class Engine {
 						final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
 						messageLog.addMessage( deathMessage );
 					}
+					case ItemAdded( item, message ):
+						entities.remove( item );
+						messageLog.addMessage( message );
+					case InventoryFull( message ): messageLog.addMessage( message );
 			}
 		}
 
@@ -223,6 +252,8 @@ class Engine {
 								final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
 								messageLog.addMessage( deathMessage );
 							}
+						case ItemAdded( item, message ): messageLog.addMessage( message );
+						case InventoryFull( message ): messageLog.addMessage( message );
 					}
 				}
 			}

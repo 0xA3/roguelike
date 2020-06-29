@@ -1,5 +1,7 @@
 package roguelike;
 
+import roguelike.components.Item;
+import roguelike.components.Inventory;
 import roguelike.components.BasicMonster;
 import roguelike.components.Fighter;
 import roguelike.mapobjects.GameMap;
@@ -17,8 +19,10 @@ class Entity {
 
 	public var fighter:Null<Fighter>;
 	public var ai:Null<BasicMonster>;
+	public var item:Null<Item>;
+	public var inventory:Null<Inventory>;
 
-	public function new( x:Int, y:Int, avatar:Cell, name:String, isBlock = false, renderOrder = RenderOrder.CORPSE, ?fighter:Fighter, ?ai:BasicMonster ) {
+	public function new( x:Int, y:Int, avatar:Cell, name:String, isBlock = false, renderOrder = RenderOrder.CORPSE, ?fighter:Fighter, ?ai:BasicMonster, ?item:Item, ?inventory:Inventory ) {
 		this.x = x;
 		this.y = y;
 		this.name = name;
@@ -29,9 +33,13 @@ class Entity {
 
 		this.fighter = fighter;
 		this.ai = ai;
+		this.item = item;
+		this.inventory = inventory;
 
 		if( this.fighter != null ) fighter.owner = this;
 		if( this.ai != null ) ai.owner = this;
+		if( this.item != null ) item.owner = this;
+		if( this.inventory != null ) inventory.owner = this;
 
 	}
 
