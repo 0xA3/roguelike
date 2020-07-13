@@ -2,7 +2,7 @@ package roguelike;
 
 import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
-import roguelike.GameStates;
+import roguelike.GameState;
 import roguelike.MessageLog.Message;
 import asciix.Cell;
 
@@ -12,7 +12,7 @@ class DeathFunctions {
 		player.avatar = deathAvatar;
 
 		final message:Message = { text: 'You died!', format: cells[PlayerDeathMessage] };
-		return { message: message, state: GameStates.PlayerDead };
+		return { message: message, state: GameState.PlayerDead };
 	}
 
 	public static function killMonster( monster:Entity, deathAvatar:Cell ) {

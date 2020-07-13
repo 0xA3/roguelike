@@ -7,7 +7,7 @@ import astar.types.Direction;
 import haxe.Timer;
 import js.Node.process;
 import roguelike.components.Fighter;
-import roguelike.GameStates;
+import roguelike.GameState;
 import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
@@ -44,11 +44,6 @@ enum TCell {
 	InventoryMessage;
 }
 
-enum Action {
-	Move( dx:Int, dy:Int );
-	Pickup;
-}
-
 class Engine {
 	
 	static final randomInit = 0;
@@ -74,10 +69,12 @@ class Engine {
 	public static final fovRadius = 10;
 
 	public static final cells = roguelike.skins.RoguelikeTutorials.cells;
+	public static final colorThemeColors = asciix.colorThemes.WindowsConsole.colors;
+
 	// public static final cells = roguelike.skins.Classic.cells;
-	
-	final con:Array<Array<Cell>> = [];
-	final panel:Array<Array<Cell>> = [];
+
+	var con:Array<Array<Cell>> = [];
+	var panel:Array<Array<Cell>> = [];
 
 	final keyListener:KeyListener;
 	final entities:Array<Entity> = [];
@@ -88,7 +85,8 @@ class Engine {
 	var messageLog:MessageLog;
 
 	var fovRecompute = true;
-	var gameState:GameStates;
+	var gameState = PlayersTurn;
+	var previousGameState = PlayersTurn;
 	var playerTurnResults:Array<TResult> = [];
 
 	public function new( keyListener:KeyListener ) {
@@ -99,8 +97,8 @@ class Engine {
 
 		xa3.MTRandom.initializeRandGenerator( randomInit );
 
-		for( y in 0...screenHeight ) con.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
-		for( y in 0...panelHeight ) panel.push( [for( x in 0...screenWidth ) { code: " ".code, color: Default, background: Default }] );
+		con = RenderFunctions.createGrid( screenWidth, screenHeight );
+		panel = RenderFunctions.createGrid( screenWidth, panelHeight );
 
 		final fighterComponent = new Fighter( 30, 2, 5 );
 		final inventoryComponent = new Inventory( 26 );
@@ -123,8 +121,6 @@ class Engine {
 
 	public function start() {
 		
-		gameState = PlayersTurn;
-
 		Sys.print( Ansix.clear() );
 		fov.update( player, fovRadius );
 		render();
@@ -133,7 +129,7 @@ class Engine {
 	
 	function render() {
 		clearAll( con, entities, screenWidth, screenHeight );
-		renderAll( con, panel, entities, player, gameMap, fov, messageLog, screenWidth, screenHeight, barWidth, panelHeight, panelY );
+		renderAll( con, panel, entities, player, gameMap, fov, messageLog, screenWidth, screenHeight, barWidth, panelHeight, panelY, gameState );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( con, screenWidth ) + Ansix.resetFormat() );
 		// process.exit();
 		loop();
@@ -146,15 +142,16 @@ class Engine {
 	function branch() {
 		playerTurnResults = [];
 		switch gameState {
-			case PlayersTurn: getInput();
+			case PlayersTurn: handlePlayerTurnKeys();
 			case EnemyTurn: updateEnemy();
-			case PlayerDead:
-				Sys.println( 'The End' );
-				process.exit();
+			case PlayerDead: handlePlayerDeadKeys();
+			case ShowInventory: handleInventoryKeys();
 		}
+		keyListener.key = 0;
 	}
 
-	function getInput() {
+	function handlePlayerTurnKeys() {
+		// if( keyListener.key != 0 ) trace( keyListener.key );
 		switch keyListener.key {
 			case 101: process.exit(); // esc
 			case 117: updatePlayer( Move( 0, -1 )); // up
@@ -162,13 +159,48 @@ class Engine {
 			case 100: updatePlayer( Move( 0, 1 )); // down
 			case 114: updatePlayer( Move( 1, 0 )); // right
 			case 103: updatePlayer( Pickup ); // g
+			case 105: // i
+				previousGameState = gameState;
+				gameState = ShowInventory;
+				trace( 'showInventory' );
+				render();
 			default:
 				loop();
 				return;
 		}
+	}
+
+	function handlePlayerDeadKeys() {
+		switch keyListener.key {
+			case 101: // esc
+				process.exit();
+			case 105: // i
+				previousGameState = gameState;
+				gameState = ShowInventory;
+				render();
+			default:
+				loop();
+				return;
+	
+		}
+		// Sys.println( 'The End' );
+		// process.exit();
 
 	}
 
+	function handleInventoryKeys() {
+		if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
+		switch keyListener.key {
+			case 101: // esc
+				trace( 'esc - set gameState to $previousGameState' );
+				gameState = previousGameState;
+				render();
+			default:
+				loop();
+				return;
+		}
+	}
+	
 	function updatePlayer( action:Action ) {
 		// Sys.println( 'updatePlayer' );
 		switch action {
@@ -206,8 +238,7 @@ class Engine {
 					}
 				}
 				if( !isOnItem ) messageLog.addMessage({ text: 'There is nothing here to pick up.', format: cells[InventoryMessage] });
-			}
-		keyListener.key = 0;
+		}
 		gameState = EnemyTurn;
 
 		for( playerTurnResult in playerTurnResults ) {
@@ -261,6 +292,5 @@ class Engine {
 		gameState = nextGameState;
 		render();
 	}
-
 
 }

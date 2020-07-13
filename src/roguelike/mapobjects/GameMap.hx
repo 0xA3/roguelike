@@ -142,6 +142,7 @@ class GameMap {
 		final numberOfMonsters = MTRandom.quickIntRand( maxMonstersPerRoom );
 		final numberOfItems = MTRandom.quickIntRand( maxItemsPerRoom );
 
+		// place monsters
 		for( i in 0...numberOfMonsters ) {
 			// Choose a random location in the room
 			final xMin = room.x1 + 1;
@@ -172,6 +173,7 @@ class GameMap {
 			}
 		}
 
+		// place items
 		for( i in 0...numberOfItems ) {
 			final x1 = room.x1 + 1;
 			final w1 = room.x2 - 1 - x1;
@@ -182,7 +184,7 @@ class GameMap {
 
 			if( checkPosition( x, y, entities )) {
 				final itemName = "Healing Potion";
-				final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item( itemName ));
+				final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item());
 				entities.push( item );
 			}
 

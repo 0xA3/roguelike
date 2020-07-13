@@ -1,7 +1,8 @@
 package roguelike;
 
-enum GameStates {
+enum GameState {
 	PlayersTurn;
 	EnemyTurn;
 	PlayerDead;
+	ShowInventory;
 }
