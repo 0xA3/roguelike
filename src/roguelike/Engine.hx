@@ -133,7 +133,6 @@ class Engine {
 		clearAll( con, entities, screenWidth, screenHeight );
 		renderAll( con, panel, entities, player, gameMap, fov, messageLog, screenWidth, screenHeight, barWidth, panelHeight, panelY, gameState );
 		Sys.print( Ansix.resetCursor() + Ansix.renderGrid2d( con, screenWidth ) + Ansix.resetFormat() );
-		// process.exit();
 		loop();
 	}
 
@@ -171,7 +170,6 @@ class Engine {
 				render();
 			default:
 				loop();
-				return;
 		}
 	}
 
@@ -190,15 +188,13 @@ class Engine {
 				return;
 	
 		}
-		// Sys.println( 'The End' );
-		// process.exit();
 
 	}
 
 	function handleInventoryKeys() {
 		// if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
 		switch keyListener.key {
-			case 101: // esc
+			case 101, 105: // esc or i
 				// trace( 'esc - set gameState to $previousGameState' );
 				gameState = previousGameState;
 				render();
