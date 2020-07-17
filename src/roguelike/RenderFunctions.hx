@@ -51,6 +51,8 @@ class RenderFunctions {
 				} else {
 					if( gameMap.isExplored( x, y )) {
 						pasteCell( con[y][x], isWall ? cells[DarkWall] : cells[DarkGround] );
+					} else {
+						pasteCell( con[y][x], cells[Empty] );
 					}
 				}
 			}
@@ -124,7 +126,7 @@ class RenderFunctions {
 	public static function getTextHeight( text:String, width:Int, maxHeight:Int ) {
 		if( text == "" ) return 0;
 
-		final wordGrid = splitText( text );
+		final wordGrid = splitLinesWords( text );
 		final wrappedLines = wrapWordGrid( wordGrid, width );
 
 		return Std.int( Math.min( maxHeight, wrappedLines.length ));
@@ -133,7 +135,7 @@ class RenderFunctions {
 	public static function drawTextInRect( text:String, x:Int, y:Int, width:Int, height:Int, grid:Array<Array<Cell>>, format:Cell, align:Align ) {
 		if( text == "" ) return;
 
-		final wordGrid = splitText( text );
+		final wordGrid = splitLinesWords( text );
 		final wrappedLines = wrapWordGrid( wordGrid, width );
 		final realHeight = Std.int( Math.min( height, wrappedLines.length ));
 		for( i in 0...realHeight ) {
@@ -141,7 +143,7 @@ class RenderFunctions {
 		}
 	}
 
-	static function splitText( text:String ) {
+	static function splitLinesWords( text:String ) {
 		final lines = text.split( "\n" );
 		return lines.map( line -> line.split(" "));
 	}
@@ -164,7 +166,6 @@ class RenderFunctions {
 			wrappedWordGrid.push( outputRow );
 		}
 		final wrappedLines = wrappedWordGrid.map( row -> row.join(" "));
-		trace( wrappedLines );
 		return wrappedLines;
 	}
 

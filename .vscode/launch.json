@@ -13,6 +13,11 @@
 				"type" : "haxe",
 				"args" : "active configuration"
 			}
+		},
+		{
+			"name": "test.hxml",
+			"type": "haxe-eval",
+			"request": "launch"
 		}
 	]
 }

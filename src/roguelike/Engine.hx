@@ -1,20 +1,22 @@
 package roguelike;
 
-import roguelike.components.Inventory;
+import asciix.Ansix;
+import asciix.Cell;
 import astar.Graph;
 import astar.MovementDirection;
 import astar.types.Direction;
 import haxe.Timer;
-import js.Node.process;
 import roguelike.components.Fighter;
+import roguelike.components.Inventory;
 import roguelike.GameState;
 import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
 import Std.int;
-import asciix.Ansix;
-import asciix.Asciix;
-import asciix.Cell;
+
+#if nodejs
+import js.Node.process;
+#end
 
 using xa3.ArrayUtils;
 
@@ -153,7 +155,10 @@ class Engine {
 	function handlePlayerTurnKeys() {
 		// if( keyListener.key != 0 ) trace( keyListener.key );
 		switch keyListener.key {
-			case 101: process.exit(); // esc
+			case 101: // esc
+				#if nodejs
+				process.exit();
+				#end
 			case 117: updatePlayer( Move( 0, -1 )); // up
 			case 108: updatePlayer( Move( -1, 0 )); // left
 			case 100: updatePlayer( Move( 0, 1 )); // down
@@ -162,7 +167,7 @@ class Engine {
 			case 105: // i
 				previousGameState = gameState;
 				gameState = ShowInventory;
-				trace( 'showInventory' );
+				// trace( 'showInventory' );
 				render();
 			default:
 				loop();
@@ -173,7 +178,9 @@ class Engine {
 	function handlePlayerDeadKeys() {
 		switch keyListener.key {
 			case 101: // esc
+				#if nodejs
 				process.exit();
+				#end
 			case 105: // i
 				previousGameState = gameState;
 				gameState = ShowInventory;
@@ -189,10 +196,10 @@ class Engine {
 	}
 
 	function handleInventoryKeys() {
-		if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
+		// if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
 		switch keyListener.key {
 			case 101: // esc
-				trace( 'esc - set gameState to $previousGameState' );
+				// trace( 'esc - set gameState to $previousGameState' );
 				gameState = previousGameState;
 				render();
 			default:

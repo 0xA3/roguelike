@@ -1,6 +1,8 @@
 package roguelike;
 
+#if nodejs
 import js.Node.process;
+#end
 
 class KeyListener {
 	
@@ -8,6 +10,7 @@ class KeyListener {
 	
 	public function new() {
 		
+		#if nodejs
 		final readline = js.Lib.require( 'readline' );
 		readline.emitKeypressEvents( process.stdin );
 		untyped process.stdin.setRawMode( true );
@@ -18,5 +21,6 @@ class KeyListener {
 				this.key = key.name.charCodeAt( 0 );
 			}
 		});
+		#end
 	}
 }
