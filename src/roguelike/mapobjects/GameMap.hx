@@ -184,7 +184,7 @@ class GameMap {
 
 			if( checkPosition( x, y, entities )) {
 				final itemName = "Healing Potion";
-				final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item());
+				final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item( ItemFunctions.heal, 4 ));
 				entities.push( item );
 			}
 

@@ -12,6 +12,7 @@ import roguelike.GameState;
 import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
+import roguelike.TResult;
 import Std.int;
 
 #if nodejs
@@ -43,6 +44,8 @@ enum TCell {
 	EnemyDeathMessage;
 	StatusMessage;
 	ItemAddedMessage;
+	ItemFalseMessage;
+	ItemTrueMessage;
 	InventoryMessage;
 }
 
@@ -194,13 +197,17 @@ class Engine {
 	function handleInventoryKeys() {
 		// if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
 		switch keyListener.key {
-			case 101, 105: // esc or i
+			case 101: // esc
 				// trace( 'esc - set gameState to $previousGameState' );
 				gameState = previousGameState;
 				render();
 			default:
-				loop();
-				return;
+				final index = keyListener.key - "a".code;
+				if( index >= 0 ) {
+					useInventoryItem( index );
+				} else {
+					loop();
+				}
 		}
 	}
 	
@@ -262,7 +269,6 @@ class Engine {
 					case InventoryFull( message ): messageLog.addMessage( message );
 			}
 		}
-
 		render();
 	}
 
@@ -293,6 +299,19 @@ class Engine {
 			}
 		}
 		gameState = nextGameState;
+		render();
+	}
+
+	function useInventoryItem( index:Int ) {
+		
+		if( index < player.inventory.items.length ) {
+			final item = player.inventory.items[index];
+			final results = player.inventory.useItem( item );
+			final messages = results.map( result -> result.message );
+			for( message in messages ) messageLog.addMessage( message );
+		}
+		// todo	add consumed to player results to switch state to enemy turn
+		// trace( playerTurnResults );
 		render();
 	}
 

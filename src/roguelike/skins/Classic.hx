@@ -27,6 +27,8 @@ class Classic {
 		EnemyDeathMessage 		=> { code: 0		, color: Default, background: Transparent },
 		StatusMessage 			=> { code: 0		, color: Default, background: Transparent },
 		ItemAddedMessage 		=> { code: 0		, color: Default, background: Transparent },
+		ItemFalseMessage =>		{ code: 0		, color: Default, background: Transparent },
+		ItemTrueMessage =>		{ code: 0		, color: Default, background: Transparent },
 		InventoryMessage 	=> { code: 0		, color: Default, background: Transparent }
 	];
 }

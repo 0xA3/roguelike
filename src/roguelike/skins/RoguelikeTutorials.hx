@@ -28,6 +28,8 @@ class RoguelikeTutorials {
 		EnemyDeathMessage => 	{ code: 0		, color: Yellow, background: Transparent },
 		StatusMessage =>		{ code: 0		, color: White, background: Transparent },
 		ItemAddedMessage =>		{ code: 0		, color: Blue, background: Transparent },
+		ItemFalseMessage =>		{ code: 0		, color: Yellow, background: Transparent },
+		ItemTrueMessage =>		{ code: 0		, color: Green, background: Transparent },
 		InventoryMessage =>		{ code: 0		, color: Yellow, background: Transparent }
 	];
 }

@@ -1,9 +1,12 @@
 package roguelike.components;
 
+import roguelike.ItemFunctions.ItemResult;
 import roguelike.MessageLog.Message;
 import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
 import roguelike.TResult;
+
+using xa3.ArrayUtils;
 
 class Inventory {
 	
@@ -28,5 +31,30 @@ class Inventory {
 			results.push( ItemAdded( item, message ));
 		}
 		return results;
+	}
+
+	public function useItem( item:Entity ) {
+		
+		final results:Array<ItemResult> = [];
+
+		final itemComponent = item.item;
+
+		if( itemComponent.useFunction == null ) {
+			results.push({ consumed: false, message: { text: 'The ${item.name} cannot be used.', format: cells[ItemFalseMessage]} });
+		} else {
+			final kwargs = itemComponent.kwargs;
+			final itemUseResults = itemComponent.useFunction( owner, kwargs );
+
+			for( itemUseResult in itemUseResults ) {
+				if( itemUseResult.consumed ) removeItem( item );
+			}
+			results.extend( itemUseResults );
+		}
+
+		return results;
+	}
+
+	public function removeItem( item:Entity ) {
+		items.remove( item );
 	}
 }

@@ -1,6 +1,5 @@
 package roguelike;
 
-import roguelike.components.Item;
 import roguelike.MessageLog.Message;
 
 enum TResult {

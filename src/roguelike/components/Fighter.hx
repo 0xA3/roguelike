@@ -30,6 +30,10 @@ class Fighter {
 		return results;
 	}
 
+	public function heal( amount:Int ) {
+		hp = Std.int( Math.min( maxHp, hp + amount ));
+	}
+
 	public function attack( target:Entity ) {
 		final results = [];
 		final damage = power - target.fighter.defense;
