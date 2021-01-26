@@ -57,4 +57,17 @@ class Inventory {
 	public function removeItem( item:Entity ) {
 		items.remove( item );
 	}
+
+	public function dropItem( item:Entity ) {
+		
+		final results:Array<ItemResult> = [];
+
+		item.x = owner.x;
+		item.y = owner.y;
+		items.remove( item );
+
+		results.push({ dropped: item, message: { text: 'You dropped the ${item.name}', format: cells[InventoryMessage] }} );
+
+		return results;
+	}
 }

@@ -6,7 +6,8 @@ import roguelike.Engine.TCell;
 import roguelike.MessageLog.Message;
 
 typedef ItemResult = {
-	final consumed:Bool;
+	final ?consumed:Bool;
+	final ?dropped:Entity;
 	final message:Message;
 }
 

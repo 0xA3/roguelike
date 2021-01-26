@@ -77,11 +77,14 @@ class RenderFunctions {
 		// trace( panel.map( row -> row.map( cell -> String.fromCharCode( cell.code )).join("") ).join( "\n") );
 		blit( con, panel, 0, panelY );
 
-		if( gameState == ShowInventory ) {
-
-			Menus.inventoryMenu(
-				con,
+		if( gameState == InventoryUse ) {
+			Menus.inventoryMenu( con,
 				'Press the key next to an item to use it, or Esc to cancel.\n',
+				player.inventory, 50, screenWidth, screenHeight
+			);
+		} else if( gameState == InventoryDrop ) {
+			Menus.inventoryMenu( con,
+				'Press the key next to an item to drop it, or Esc to cancel.\n',
 				player.inventory, 50, screenWidth, screenHeight
 			);
 		}

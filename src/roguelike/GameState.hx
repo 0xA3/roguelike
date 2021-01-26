@@ -4,5 +4,6 @@ enum GameState {
 	PlayersTurn;
 	EnemyTurn;
 	PlayerDead;
-	ShowInventory;
+	InventoryUse;
+	InventoryDrop;
 }

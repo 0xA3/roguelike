@@ -6,7 +6,7 @@ import js.Node.process;
 
 class KeyListener {
 	
-	public var key = 0;
+	public var key = "";
 	
 	public function new() {
 		
@@ -18,7 +18,7 @@ class KeyListener {
 			if (key.ctrl && key.name == 'c') {
 				process.exit();
 			} else {
-				this.key = key.name.charCodeAt( 0 );
+				this.key = key.name;
 			}
 		});
 		#end

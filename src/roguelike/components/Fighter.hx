@@ -4,6 +4,10 @@ import roguelike.Engine.cells;
 import roguelike.Engine.TCell;
 import roguelike.TResult;
 
+import Std.int;
+import Math.max;
+import Math.min;
+
 using xa3.ArrayUtils;
 
 class Fighter {
@@ -24,14 +28,14 @@ class Fighter {
 
 	public function takeDamage( amount:Int ) {
 		final results = [];
-		hp = Std.int( Math.max( 0, hp - amount ));
+		hp = int( max( 0, hp - amount ));
 
 		if( hp <= 0 ) results.push( Dead( owner ));
 		return results;
 	}
 
 	public function heal( amount:Int ) {
-		hp = Std.int( Math.min( maxHp, hp + amount ));
+		hp = int( min( maxHp, hp + amount ));
 	}
 
 	public function attack( target:Entity ) {

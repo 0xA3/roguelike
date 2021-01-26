@@ -91,6 +91,7 @@ class Engine {
 
 	var fovRecompute = true;
 	var gameState = PlayersTurn;
+	// var gameStateString = "";
 	var previousGameState = PlayersTurn;
 	var playerTurnResults:Array<TResult> = [];
 
@@ -140,36 +141,48 @@ class Engine {
 	}
 
 	function loop() {
-		Timer.delay( branch, 16 );
+		Timer.delay( handleGameState, 16 );
 	}
 
-	function branch() {
+	function handleGameState() {
+		
+		// gameStateString = switch gameState {
+		// 	case PlayersTurn: "PlayersTurn";
+		// 	case EnemyTurn: "EnemyTurn";
+		// 	case PlayerDead: "PlayerDead";
+		// 	case InventoryUse: "InventoryUse";
+		// 	case InventoryDrop: "InventoryDrop";
+		// }
+
 		playerTurnResults = [];
 		switch gameState {
 			case PlayersTurn: handlePlayerTurnKeys();
 			case EnemyTurn: updateEnemy();
 			case PlayerDead: handlePlayerDeadKeys();
-			case ShowInventory: handleInventoryKeys();
+			case InventoryUse, InventoryDrop: handleInventoryKeys();
 		}
-		keyListener.key = 0;
+		keyListener.key = "";
 	}
 
 	function handlePlayerTurnKeys() {
-		// if( keyListener.key != 0 ) trace( keyListener.key );
+		// if( keyListener.key != "" ) trace( keyListener.key + "               " );
 		switch keyListener.key {
-			case 101: // esc
+			case "escape": // esc
 				#if nodejs
 				process.exit();
 				#end
-			case 117: updatePlayer( Move( 0, -1 )); // up
-			case 108: updatePlayer( Move( -1, 0 )); // left
-			case 100: updatePlayer( Move( 0, 1 )); // down
-			case 114: updatePlayer( Move( 1, 0 )); // right
-			case 103: updatePlayer( Pickup ); // g
-			case 105: // i
+			case "up": updatePlayer( Move( 0, -1 )); // up
+			case "left": updatePlayer( Move( -1, 0 )); // left
+			case "down": updatePlayer( Move( 0, 1 )); // down
+			case "right": updatePlayer( Move( 1, 0 )); // right
+			case "g": updatePlayer( Pickup );
+			case "i":
 				previousGameState = gameState;
-				gameState = ShowInventory;
-				// trace( 'showInventory' );
+				gameState = InventoryUse;
+				render();
+			case "d":
+				previousGameState = gameState;	
+				gameState = InventoryDrop;
 				render();
 			default:
 				loop();
@@ -178,13 +191,17 @@ class Engine {
 
 	function handlePlayerDeadKeys() {
 		switch keyListener.key {
-			case 101: // esc
+			case "escape": // esc
 				#if nodejs
 				process.exit();
 				#end
-			case 105: // i
+			case "i":
 				previousGameState = gameState;
-				gameState = ShowInventory;
+				gameState = InventoryUse;
+				render();
+			case "d":
+				previousGameState = gameState;	
+				gameState = InventoryDrop;
 				render();
 			default:
 				loop();
@@ -195,16 +212,22 @@ class Engine {
 	}
 
 	function handleInventoryKeys() {
-		// if( keyListener.key != 0 ) trace( 'handleInventoryKeys' );
+		// if( keyListener.key != "" ) trace( keyListener.key + "               " );
 		switch keyListener.key {
-			case 101: // esc
+			case "escape": // esc
 				// trace( 'esc - set gameState to $previousGameState' );
 				gameState = previousGameState;
 				render();
 			default:
-				final index = keyListener.key - "a".code;
-				if( index >= 0 ) {
-					useInventoryItem( index );
+				if( keyListener.key.length == 1 ) {
+					final index = keyListener.key.charCodeAt( 0 ) - "a".code;
+					if( index >= 0 ) {
+						switch gameState {
+							case InventoryUse: useInventoryItem( index );
+							case InventoryDrop: dropInventoryItem( index );
+							default: // no-op
+						}
+					}	
 				} else {
 					loop();
 				}
@@ -263,10 +286,10 @@ class Engine {
 						final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
 						messageLog.addMessage( deathMessage );
 					}
-					case ItemAdded( item, message ):
-						entities.remove( item );
-						messageLog.addMessage( message );
-					case InventoryFull( message ): messageLog.addMessage( message );
+				case ItemAdded( item, message ):
+					entities.remove( item );
+					messageLog.addMessage( message );
+				case InventoryFull( message ): messageLog.addMessage( message );
 			}
 		}
 		render();
@@ -307,11 +330,24 @@ class Engine {
 		if( index < player.inventory.items.length ) {
 			final item = player.inventory.items[index];
 			final results = player.inventory.useItem( item );
-			final messages = results.map( result -> result.message );
-			for( message in messages ) messageLog.addMessage( message );
+			for( result in results ) {
+				messageLog.addMessage( result.message );
+				if( result.consumed ) gameState = EnemyTurn;
+			}
 		}
-		// todo	add consumed to player results to switch state to enemy turn
-		// trace( playerTurnResults );
+		render();
+	}
+
+	function dropInventoryItem( index:Int ) {
+		if( index < player.inventory.items.length ) {
+			final item = player.inventory.items[index];
+			final results = player.inventory.dropItem( item );
+			for( result in results ) {
+				messageLog.addMessage( result.message );
+				entities.push( result.dropped );
+			}
+		}
+		gameState = EnemyTurn;
 		render();
 	}
 
