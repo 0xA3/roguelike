@@ -1,6 +1,6 @@
 package roguelike.skins;
 
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 import asciix.Cell;
 
 class Classic {
@@ -13,6 +13,7 @@ class Classic {
 		Troll => 			{ code: "T".code, color: Default , background: Transparent },
 		DeadEnemy => 		{ code: '%'.code, color: Default, background: Transparent },
 		HealingPotion => 	{ code: "!".code, color: Default, background: Transparent },
+		LightningScroll => 	{ code: "#".code, color: Default, background: Transparent },
 		
 		DarkWall => 	{ code: "#".code, color: Default, background: Default },
 		DarkGround => 	{ code: " ".code, color: Default, background: Default },
@@ -23,12 +24,14 @@ class Classic {
 		HealthBar =>		{ code: "*".code, color: Default, background: Transparent },
 		HealthBackground =>	{ code: "·".code, color: Default, background: Transparent },
 		
-		PlayerDeathMessage 		=> { code: 0		, color: Default, background: Transparent },
-		EnemyDeathMessage 		=> { code: 0		, color: Default, background: Transparent },
-		StatusMessage 			=> { code: 0		, color: Default, background: Transparent },
-		ItemAddedMessage 		=> { code: 0		, color: Default, background: Transparent },
+		PlayerDeathMessage =>	{ code: 0		, color: Default, background: Transparent },
+		EnemyDeathMessage =>	{ code: 0		, color: Default, background: Transparent },
+		StatusMessage =>		{ code: 0		, color: Default, background: Transparent },
+		ItemAddedMessage =>		{ code: 0		, color: Default, background: Transparent },
 		ItemFalseMessage =>		{ code: 0		, color: Default, background: Transparent },
 		ItemTrueMessage =>		{ code: 0		, color: Default, background: Transparent },
-		InventoryMessage 	=> { code: 0		, color: Default, background: Transparent }
+		InventoryMessage =>		{ code: 0		, color: Default, background: Transparent }
+		WeaponHitMessage =>		{ code: 0		, color: Default, background: Transparent },
+		WeaponFalseMessage =>	{ code: 0		, color: Default, background: Transparent },
 	];
 }

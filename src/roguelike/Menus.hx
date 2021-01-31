@@ -3,7 +3,7 @@ package roguelike;
 import roguelike.components.Inventory;
 import asciix.Cell;
 import roguelike.Engine.cells;
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 
 class Menus {
 	

@@ -1,7 +1,7 @@
 package roguelike;
 
 import roguelike.Engine.cells;
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 import roguelike.GameState;
 import roguelike.MessageLog.Message;
 import asciix.Cell;

@@ -1,9 +1,8 @@
 package roguelike.components;
 
-import roguelike.ItemFunctions.ItemResult;
 import roguelike.MessageLog.Message;
 import roguelike.Engine.cells;
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 import roguelike.TResult;
 
 using xa3.ArrayUtils;
@@ -35,18 +34,21 @@ class Inventory {
 
 	public function useItem( item:Entity ) {
 		
-		final results:Array<ItemResult> = [];
+		final results:Array<TResult> = [];
 
 		final itemComponent = item.item;
 
 		if( itemComponent.useFunction == null ) {
-			results.push({ consumed: false, message: { text: 'The ${item.name} cannot be used.', format: cells[ItemFalseMessage]} });
+			results.push( Message({ text: 'The ${item.name} cannot be used.', format: cells[ItemFalseMessage]} ));
 		} else {
 			final kwargs = itemComponent.kwargs;
 			final itemUseResults = itemComponent.useFunction( owner, kwargs );
 
 			for( itemUseResult in itemUseResults ) {
-				if( itemUseResult.consumed ) removeItem( item );
+				switch itemUseResult {
+					case ItemConsumed: removeItem( item );
+					default: // no-op
+				}
 			}
 			results.extend( itemUseResults );
 		}
@@ -60,13 +62,13 @@ class Inventory {
 
 	public function dropItem( item:Entity ) {
 		
-		final results:Array<ItemResult> = [];
+		final results:Array<TResult> = [];
 
 		item.x = owner.x;
 		item.y = owner.y;
 		items.remove( item );
 
-		results.push({ dropped: item, message: { text: 'You dropped the ${item.name}', format: cells[InventoryMessage] }} );
+		results.push( ItemDropped( item, { text: 'You dropped the ${item.name}', format: cells[InventoryMessage] } ));
 
 		return results;
 	}

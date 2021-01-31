@@ -7,7 +7,7 @@ import roguelike.components.BasicMonster;
 import roguelike.components.Fighter;
 import roguelike.components.Item;
 import roguelike.Engine.cells;
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 import Std.int;
 import xa3.MTRandom;
 
@@ -40,8 +40,8 @@ class GameMap {
 		tiles[y][x].isExplored = true;
 	}
 
-	public function makeMap( maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity, entities:Array<Entity>, maxMonstersPerRoom:Int, maxItemsPerRoom:Int ) {
-
+	public function makeMap( fov:Fov, maxRooms:Int, roomMinSize:Int, roomMaxSize:Int, mapWidth:Int, mapHeight:Int, player:Entity, entities:Array<Entity>, maxMonstersPerRoom:Int, maxItemsPerRoom:Int ) {
+		xa3.MTRandom.initializeRandGenerator( Engine.mapSeed );
 		final rooms:Array<Rect> = [];
 		for( r in 0...maxRooms ) {
 			// random width and height
@@ -97,10 +97,12 @@ class GameMap {
 				}
 
 				rooms.push( room );
-				placeEntities( room, entities, maxMonstersPerRoom, maxItemsPerRoom );
-
 			}
+
 		}
+
+		for( room in rooms ) placeItems( fov, room, entities, maxMonstersPerRoom, maxItemsPerRoom );
+		for( room in rooms ) placeMonsters( fov, room, entities, maxMonstersPerRoom, maxItemsPerRoom );
 
 	}
 
@@ -137,10 +139,44 @@ class GameMap {
 		}
 	}
 
-	function placeEntities( room:Rect, entities:Array<Entity>, maxMonstersPerRoom:Int, maxItemsPerRoom:Int ) {
+	function placeItems( fov: Fov, room:Rect, entities:Array<Entity>, maxMonstersPerRoom:Int, maxItemsPerRoom:Int ) {
+		xa3.MTRandom.initializeRandGenerator( Engine.itemsSeed );
+		// Get a random number of items
+		final numberOfItems = MTRandom.quickIntRand( maxItemsPerRoom );
+		// place items
+		for( i in 0...numberOfItems ) {
+			final x1 = room.x1 + 1;
+			final w1 = room.x2 - 1 - x1;
+			final y1 = room.y1 + 1;
+			final h1 = room.y2 - 1 - y1;
+			final x = x1 + MTRandom.quickIntRand( w1 );
+			final y = y1 + MTRandom.quickIntRand( h1 );
+
+			if( checkPosition( x, y, entities )) {
+				
+				final itemChance = MTRandom.quickIntRand( 100 );
+
+				if( itemChance < 70 ) {
+
+					final itemName = "Healing Potion";
+					final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item( ItemFunctions.heal, HealingPotion( 4 )));
+					entities.push( item );
+				} else {
+
+					final itemName = "Lightning Scroll";
+					final item = new Entity( x, y, cells[LightningScroll], itemName, false, RenderOrder.ITEM, new Item( ItemFunctions.castLightning, Lightning( entities, fov, 20, 5 )) );
+					entities.push( item );
+				}
+				
+			}
+
+		}
+	}
+
+	function placeMonsters( fov: Fov, room:Rect, entities:Array<Entity>, maxMonstersPerRoom:Int, maxItemsPerRoom:Int ) {
+		xa3.MTRandom.initializeRandGenerator( Engine.enemiesSeed );
 		// Get a random number of monsters
 		final numberOfMonsters = MTRandom.quickIntRand( maxMonstersPerRoom );
-		final numberOfItems = MTRandom.quickIntRand( maxItemsPerRoom );
 
 		// place monsters
 		for( i in 0...numberOfMonsters ) {
@@ -156,13 +192,13 @@ class GameMap {
 				final monsterType = MTRandom.quickRand() < 0.8 ? Orc : Troll;
 				switch monsterType {
 					case Orc:
-						final fighterComponent = new Fighter( 10, 0, 3 );
+						final fighterComponent = new Fighter( Engine.OrcHitPoints, Engine.OrcDefense, Engine.OrcPower );
 						final aiComponent = new BasicMonster();
 						final monster = new Entity( x, y, cells[monsterType], "Orc", true, RenderOrder.ACTOR, fighterComponent, aiComponent );
 						entities.push( monster );
 
 					case Troll:
-						final fighterComponent = new Fighter( 16, 1, 4 );
+						final fighterComponent = new Fighter( Engine.TrollHitPoints, Engine.TrollDefense, Engine.TrollPower );
 						final aiComponent = new BasicMonster();
 						final monster = new Entity( x, y, cells[monsterType], "Troll", true, RenderOrder.ACTOR, fighterComponent, aiComponent );
 						entities.push( monster );
@@ -172,25 +208,8 @@ class GameMap {
 				
 			}
 		}
-
-		// place items
-		for( i in 0...numberOfItems ) {
-			final x1 = room.x1 + 1;
-			final w1 = room.x2 - 1 - x1;
-			final y1 = room.y1 + 1;
-			final h1 = room.y2 - 1 - y1;
-			final x = x1 + MTRandom.quickIntRand( w1 );
-			final y = y1 + MTRandom.quickIntRand( h1 );
-
-			if( checkPosition( x, y, entities )) {
-				final itemName = "Healing Potion";
-				final item = new Entity( x, y, cells[HealingPotion], itemName, false, RenderOrder.ITEM, new Item( ItemFunctions.heal, 4 ));
-				entities.push( item );
-			}
-
-		}
 	}
-
+	
 	static function checkPosition( x:Int, y:Int, entities:Array<Entity> ) {
 		for( entity in entities ) if( entity.x == x && entity.y == y ) {
 			return false;

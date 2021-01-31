@@ -1,15 +1,23 @@
 package roguelike.components;
 
-import roguelike.ItemFunctions.ItemResult;
+enum Kwargs {
+	HealingPotion( amount:Int );
+	Lightning(
+		entities:Array<Entity>,
+		fovMap:Fov,
+		damage:Int,
+		maximumRange:Int
+	);
+}
 
 class Item {
 	
 	public var owner:Entity;
 	
-	public final useFunction:( Entity, Int )->Array<ItemResult>;
-	public final kwargs:Int;
+	public final useFunction:( Entity, Kwargs )->Array<TResult>;
+	public final kwargs:Kwargs;
 
-	public function new( useFunction:( Entity, Int )->Array<ItemResult>, kwargs:Int ) {
+	public function new( useFunction:( Entity, Kwargs )->Array<TResult>, kwargs:Kwargs ) {
 		this.useFunction = useFunction;
 		this.kwargs = kwargs;
 	}

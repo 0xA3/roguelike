@@ -12,6 +12,7 @@ import roguelike.GameState;
 import roguelike.mapobjects.GameMap;
 import roguelike.RenderFunctions.clearAll;
 import roguelike.RenderFunctions.renderAll;
+import roguelike.skins.TCell;
 import roguelike.TResult;
 import Std.int;
 
@@ -21,37 +22,13 @@ import js.Node.process;
 
 using xa3.ArrayUtils;
 
-enum TCell {
-	Empty;
-	Player;
-	DeadPlayer;
-	Orc;
-	Troll;
-	DeadEnemy;
-
-	HealingPotion;
-
-	DarkWall;
-	DarkGround;
-	LightWall;
-	LightGround;
-
-	Text;
-	HealthBar;
-	HealthBackground;
-
-	PlayerDeathMessage;
-	EnemyDeathMessage;
-	StatusMessage;
-	ItemAddedMessage;
-	ItemFalseMessage;
-	ItemTrueMessage;
-	InventoryMessage;
-}
-
 class Engine {
 	
-	static final randomInit = 0;
+	public static final randomInit = 0;
+	public static final mapSeed = 1;
+	public static final itemsSeed = 1;
+	public static final enemiesSeed = 2;
+
 	static final screenWidth = 80;
 	static final screenHeight = 50;
 	static final barWidth = 20;
@@ -67,11 +44,19 @@ class Engine {
 	public static final roomMinSize = 6;
 	public static final maxRooms = 30;
 	public static final maxMonstersPerRoom = 3;
-	public static final maxItemsPerRoom = 2;
+	public static final maxItemsPerRoom = 20;
 
 	public static final fovAlgorithm = 0;
 	public static final fovLightWalls = true;
 	public static final fovRadius = 10;
+
+	public static final OrcHitPoints = 10;
+	public static final OrcDefense = 0;
+	public static final OrcPower = 3;
+
+	public static final TrollHitPoints = 16;
+	public static final TrollDefense = 1;
+	public static final TrollPower = 4;
 
 	public static final cells = roguelike.skins.RoguelikeTutorials.cells;
 	public static final colorThemeColors = asciix.colorThemes.WindowsConsole.colors;
@@ -118,9 +103,11 @@ class Engine {
 		graph.setCosts( costs );
 
 		gameMap = new GameMap( mapWidth, mapHeight, graph );
-		gameMap.makeMap( maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom, maxItemsPerRoom );
-
+		
 		fov = Fov.fromGameMap( gameMap );
+		
+		gameMap.makeMap( fov, maxRooms, roomMinSize, roomMaxSize, mapWidth, mapHeight, player, entities, maxMonstersPerRoom, maxItemsPerRoom );
+
 
 		messageLog = new MessageLog( messageX, messageWidth, messageHeight );
 	}
@@ -221,12 +208,13 @@ class Engine {
 			default:
 				if( keyListener.key.length == 1 ) {
 					final index = keyListener.key.charCodeAt( 0 ) - "a".code;
-					if( index >= 0 ) {
+					if( index >= 0 && index < player.inventory.items.length ) {
 						switch gameState {
-							case InventoryUse: useInventoryItem( index );
-							case InventoryDrop: dropInventoryItem( index );
+							case InventoryUse:  playerTurnResults.extend( player.inventory.useItem( player.inventory.items[index] ));
+							case InventoryDrop: playerTurnResults.extend( player.inventory.dropItem( player.inventory.items[index] ));
 							default: // no-op
 						}
+						executeTurnResults( playerTurnResults );
 					}	
 				} else {
 					loop();
@@ -274,9 +262,27 @@ class Engine {
 		}
 		gameState = EnemyTurn;
 
-		for( playerTurnResult in playerTurnResults ) {
+		executeTurnResults( playerTurnResults );
+	}
+
+	function updateEnemy() {
+		// Sys.println( 'updateEnemy' );
+		var nextGameState = PlayersTurn;
+		for( entity in entities ) {
+			if( entity.ai != null ) {
+				// Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
+				final enemyTurnResults = entity.ai.takeTurn( player, fov, gameMap, entities );
+				executeTurnResults( enemyTurnResults );
+			}
+		}
+		gameState = nextGameState;
+		render();
+	}
+
+	function executeTurnResults( turnResults:Array<TResult> ) {
+		
+		for( playerTurnResult in turnResults ) {
 			switch playerTurnResult {
-				case Message( message ): messageLog.addMessage( message );
 				case Dead( deadEntity ):
 					if( deadEntity == player ) {
 						final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
@@ -289,65 +295,14 @@ class Engine {
 				case ItemAdded( item, message ):
 					entities.remove( item );
 					messageLog.addMessage( message );
+				case ItemConsumed: gameState = EnemyTurn;
+				case ItemDropped( item, message ):
+					entities.push( item );
+					messageLog.addMessage( message );
 				case InventoryFull( message ): messageLog.addMessage( message );
+				case Message( message ): messageLog.addMessage( message );
 			}
 		}
-		render();
-	}
-
-	function updateEnemy() {
-		// Sys.println( 'updateEnemy' );
-		var nextGameState = PlayersTurn;
-		for( entity in entities ) {
-			if( entity.ai != null ) {
-				// Sys.println( 'The ${entity.name} ponders the meaning of its existence.' );
-				final enemyTurnResults = entity.ai.takeTurn( player, fov, gameMap, entities );
-
-				for( enemyTurnResult in enemyTurnResults ) {
-					switch enemyTurnResult {
-						case Message( message ): messageLog.addMessage( message );
-						case Dead( deadEntity ):
-							if( deadEntity == player ) {
-								final deathResult = DeathFunctions.killPlayer( player, cells[DeadPlayer] );
-								nextGameState = deathResult.state;
-								messageLog.addMessage( deathResult.message );
-							} else {
-								final deathMessage = DeathFunctions.killMonster( deadEntity, cells[DeadEnemy] );
-								messageLog.addMessage( deathMessage );
-							}
-						case ItemAdded( item, message ): messageLog.addMessage( message );
-						case InventoryFull( message ): messageLog.addMessage( message );
-					}
-				}
-			}
-		}
-		gameState = nextGameState;
-		render();
-	}
-
-	function useInventoryItem( index:Int ) {
-		
-		if( index < player.inventory.items.length ) {
-			final item = player.inventory.items[index];
-			final results = player.inventory.useItem( item );
-			for( result in results ) {
-				messageLog.addMessage( result.message );
-				if( result.consumed ) gameState = EnemyTurn;
-			}
-		}
-		render();
-	}
-
-	function dropInventoryItem( index:Int ) {
-		if( index < player.inventory.items.length ) {
-			final item = player.inventory.items[index];
-			final results = player.inventory.dropItem( item );
-			for( result in results ) {
-				messageLog.addMessage( result.message );
-				entities.push( result.dropped );
-			}
-		}
-		gameState = EnemyTurn;
 		render();
 	}
 

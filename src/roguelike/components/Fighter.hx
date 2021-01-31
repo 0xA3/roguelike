@@ -1,7 +1,7 @@
 package roguelike.components;
 
 import roguelike.Engine.cells;
-import roguelike.Engine.TCell;
+import roguelike.skins.TCell;
 import roguelike.TResult;
 
 import Std.int;
